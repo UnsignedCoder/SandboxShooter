@@ -371,6 +371,7 @@ void UWeaponHandlingComponent::EquipWeapon(AWeapon* WeaponToEquip, AWeapon*& Equ
 		if(EquippedWeapon != nullptr)
 		{
 			DropWeapon(EquippedWeapon);
+			SetPlayerArmedState(EPlayerArmedState::EPAS_Unarmed);
 		}
 		// Attach the weapon to the specified socket on the player's mesh
 		if (WeaponSlotSocket)
@@ -378,7 +379,31 @@ void UWeaponHandlingComponent::EquipWeapon(AWeapon* WeaponToEquip, AWeapon*& Equ
 			WeaponSlotSocket->AttachActor(WeaponToEquip, PlayerMesh);
 		}
 		EquippedWeapon = WeaponToEquip;
-		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);	
+		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+
+		if(EquippedWeapon != nullptr)
+		{
+			switch (EquippedWeapon->GetWeaponType())
+			{
+			case EWeaponType::EWT_Pistol:
+				SetPlayerArmedState(EPlayerArmedState::EPAS_Pistol);
+				break;
+			case EWeaponType::EWT_Rifle:
+				SetPlayerArmedState(EPlayerArmedState::EPAS_Rifle);
+				break;
+			case EWeaponType::EWT_Shotgun:
+				SetPlayerArmedState(EPlayerArmedState::EPAS_Shotgun);
+				break;
+			default: break;
+			}
+		}
+		else
+		{
+			SetPlayerArmedState(EPlayerArmedState::EPAS_Unarmed);
+		}
+	} else
+	{
+		//Placeholder for when the item to equip is not a weapon
 	}
 	
 }

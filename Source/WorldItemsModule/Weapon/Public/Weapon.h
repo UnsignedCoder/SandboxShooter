@@ -35,5 +35,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	FORCEINLINE EWeaponType GetWeaponType () const {return WeaponType;}
 	
 };
