@@ -9,7 +9,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "CharacterAttributeModule/WeaponHandling/Public/WeaponHandlingComponent.h"
-#include "Engine/SkeletalMeshSocket.h"
 
 /**
  * @brief Called when the controller possesses a pawn.
@@ -26,7 +25,7 @@ void ABelicaController::OnPossess(APawn* aPawn)
     Super::OnPossess(aPawn);
 
     // Cast the possessed pawn to ABelicaCharacter
-    BelicaCharacter = Cast<ABelicaCharacter>(aPawn);
+    Belica = Cast<ABelicaCharacter>(aPawn);
 
     // Get the EnhancedInputComponent from the InputComponent
     EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
@@ -42,6 +41,9 @@ void ABelicaController::OnPossess(APawn* aPawn)
     EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABelicaController::Move);
     EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABelicaController::HandleLookAndAiming);
     EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ABelicaController::Jump);
+
+	EnhancedInputComponent->BindAction(WalkRunToggleAction, ETriggerEvent::Started, this, &ABelicaController::HandleWalk);
+	EnhancedInputComponent->BindAction(WalkRunToggleAction, ETriggerEvent::Completed, this, &ABelicaController::HandleRun);
 	
     EnhancedInputComponent->BindAction(FireWeaponAction, ETriggerEvent::Triggered, this, &ABelicaController::HandleFireWeaponStart);
     EnhancedInputComponent->BindAction(FireWeaponAction, ETriggerEvent::Completed, this, &ABelicaController::HandleFireWeaponEnd);
@@ -77,10 +79,10 @@ void ABelicaController::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 
     // Update the field of view based on the character's weapon handling
-    if(BelicaCharacter)
+    if(Belica)
     {
-        ensureMsgf(BelicaCharacter->GetWeaponHandling(), TEXT("Weapon handling component is valid"));
-        BelicaCharacter->GetWeaponHandling()->ChangeCameraFOV(DeltaTime);
+        ensureMsgf(Belica->GetWeaponHandling(), TEXT("Weapon handling component is valid"));
+        Belica->GetWeaponHandling()->ChangeCameraFOV(DeltaTime);
     }
 }
 
@@ -98,8 +100,8 @@ void ABelicaController::Move(const FInputActionValue& Value)
     FVector2D MovementVector = Value.Get<FVector2D>();
 
     // Add movement input in the forward and right directions
-    BelicaCharacter->AddMovementInput(BelicaCharacter->GetActorForwardVector(), MovementVector.Y);
-    BelicaCharacter->AddMovementInput(BelicaCharacter->GetActorRightVector(), MovementVector.X);
+    Belica->AddMovementInput(Belica->GetActorForwardVector(), MovementVector.Y);
+    Belica->AddMovementInput(Belica->GetActorRightVector(), MovementVector.X);
 }
 
 /**
@@ -117,10 +119,10 @@ void ABelicaController::HandleLookAndAiming(const FInputActionValue& Value)
     const FVector2D LookAxisValue = Value.Get<FVector2D>();
 
     // Add yaw and pitch input based on the look axis value
-    if (BelicaCharacter->GetWeaponHandling()->GetIsAiming())
+    if (Belica->GetWeaponHandling()->GetIsAiming())
     {
-        BelicaCharacter->AddControllerYawInput(LookAxisValue.X * LookSensitivityADS);
-        BelicaCharacter->AddControllerPitchInput(LookAxisValue.Y * LookSensitivityADS);
+        Belica->AddControllerYawInput(LookAxisValue.X * LookSensitivityADS);
+        Belica->AddControllerPitchInput(LookAxisValue.Y * LookSensitivityADS);
     }
     else
     {
@@ -137,7 +139,7 @@ void ABelicaController::HandleLookAndAiming(const FInputActionValue& Value)
 void ABelicaController::Jump()
 {
     // Make the character jump
-    BelicaCharacter->Jump();
+    Belica->Jump();
 }
 
 /**
@@ -148,7 +150,7 @@ void ABelicaController::Jump()
  */
 void ABelicaController::HandleFireWeaponStart()
 {
-	BelicaCharacter->StartFIreWeapon();
+	Belica->StartFIreWeapon();
 }
 
 /**
@@ -159,7 +161,7 @@ void ABelicaController::HandleFireWeaponStart()
  */
 void ABelicaController::HandleFireWeaponEnd()
 {
-    BelicaCharacter->EndWeaponFIre();
+    Belica->EndWeaponFIre();
 }
 
 /**
@@ -169,7 +171,7 @@ void ABelicaController::HandleFireWeaponEnd()
  */
 void ABelicaController::HandleAimStart()
 {
-	BelicaCharacter->StartAiming();
+	Belica->StartAiming();
 }
 
 /**
@@ -179,7 +181,7 @@ void ABelicaController::HandleAimStart()
  */
 void ABelicaController::HandleAimEnd()
 {
-	BelicaCharacter->StopAiming();
+	Belica->StopAiming();
 }
 
 /**
@@ -189,5 +191,15 @@ void ABelicaController::HandleAimEnd()
  */
 void ABelicaController::HandleUnEquipWeapon()
 {
-    BelicaCharacter->UnEquipWeapon();
+    Belica->UnEquipWeapon();
+}
+
+void ABelicaController::HandleRun()
+{
+	Belica->ToggleRun();
+}
+
+void ABelicaController::HandleWalk()
+{
+	Belica->ToggleWalk();
 }

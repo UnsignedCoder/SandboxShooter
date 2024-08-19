@@ -86,6 +86,8 @@ public:
 	void StartFIreWeapon();
 	void EndWeaponFIre();
 
+	void ToggleRun();
+	void ToggleWalk();
 private:
 	/**
 	 * @brief The camera boom component that positions the follow camera behind the character.

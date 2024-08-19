@@ -118,6 +118,10 @@ public:
 	 */
 	void HandleUnEquipWeapon();
 
+	void HandleRun();
+
+	void HandleWalk();
+
 private:
 	/**
 	 * @brief The Belica character that this controller controls.
@@ -125,7 +129,7 @@ private:
 	 * This is a reference to the BelicaCharacter pawn that the controller is currently possessing.
 	 */
 	UPROPERTY()
-	class ABelicaCharacter* BelicaCharacter;
+	class ABelicaCharacter* Belica;
 
 	/**
 	 * @brief The enhanced input component for the controller.
@@ -191,6 +195,9 @@ private:
 	 */
 	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* UnequipWeaponAction;
+
+	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* WalkRunToggleAction;
 
 	/**
 	 * @brief The look sensitivity when the character is not aiming down sights.

@@ -175,3 +175,13 @@ void ABelicaCharacter::EndWeaponFIre()
 	WeaponHandling->SetShouldFireWeapon(true);
 }
 
+void ABelicaCharacter::ToggleRun()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 900.0f;
+}
+
+void ABelicaCharacter::ToggleWalk()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+}
+
