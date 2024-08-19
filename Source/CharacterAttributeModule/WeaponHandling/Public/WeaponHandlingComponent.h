@@ -254,19 +254,18 @@ private:
 
 //Weapon Armed State
 private:
-	UPROPERTY(VisibleAnywhere, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
 	bool bIsArmed;
 
-	UPROPERTY(VisibleAnywhere, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
 	bool bIsArmedPistol;
 
-	UPROPERTY(VisibleAnywhere, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
 	bool bIsArmedRifle;
 
-	UPROPERTY(VisibleAnywhere, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
 	bool bIsArmedShotGun;
-	
-	
+
 public:
 	/**
 	 * @brief Gets the aiming state of the character.
@@ -279,4 +278,12 @@ public:
 	 * @return True if the weapon should fire, false otherwise.
 	 */
 	FORCEINLINE bool GetShouldFireWeapon() const { return bShouldFireWeapon; }
+
+	FORCEINLINE bool GetIsArmed() const { return bIsArmed; }
+
+	FORCEINLINE bool GetIsArmedPistol() const { return bIsArmedPistol; }
+
+	FORCEINLINE bool GetIsArmedRifle() const { return bIsArmedRifle; }
+
+	FORCEINLINE bool GetIsArmedShotGun() const { return bIsArmedShotGun; }
 };

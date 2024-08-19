@@ -70,8 +70,20 @@ public:
 	/**
 	 * @brief Whether the Belica character is aiming.
 	 */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement", meta=(AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Blueprintable, Category = "Movement", meta=(AllowPrivateAccess = "true"))
 	bool bAiming;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState", meta=(AllowPrivateAccess = "true"))
+	bool bIsArmed;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState", meta=(AllowPrivateAccess = "true"))
+	bool bIsArmedWithPistol;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState", meta=(AllowPrivateAccess = "true"))
+	bool bIsArmedWithRifle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerState", meta=(AllowPrivateAccess = "true"))
+	bool bIsArmedWithShotgun;
 	
 	/**
 	 * @brief The yaw offset of the Belica character's movement.

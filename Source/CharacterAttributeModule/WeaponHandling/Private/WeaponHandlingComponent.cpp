@@ -28,7 +28,7 @@ UWeaponHandlingComponent::UWeaponHandlingComponent()
 	  AimingCrosshairMultiplier(0),
 	  bIsFiringWeapon(false),
 	  bShouldFireWeapon(true),
-	  WeaponFireRate(0.05)
+	  WeaponFireRate(0.05), bIsArmed(false), bIsArmedPistol(false), bIsArmedRifle(false), bIsArmedShotGun(false)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.
 	// You can turn these features off to improve performance if you don't need them.
