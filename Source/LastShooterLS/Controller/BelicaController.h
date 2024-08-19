@@ -122,6 +122,8 @@ public:
 
 	void HandleWalk();
 
+	void HandleCrouch();
+
 private:
 	/**
 	 * @brief The Belica character that this controller controls.
@@ -198,6 +200,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* WalkRunToggleAction;
+
+	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* ToggleCrouchAction;
 
 	/**
 	 * @brief The look sensitivity when the character is not aiming down sights.

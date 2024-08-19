@@ -19,9 +19,12 @@
  */
 ABelicaCharacter::ABelicaCharacter()
 {
+	
     // Set this character to call Tick() every frame. You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
+	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch =	true;
+	
     // Create a camera boom (a spring arm that will keep the camera behind the character)
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(RootComponent);
@@ -183,5 +186,17 @@ void ABelicaCharacter::ToggleRun()
 void ABelicaCharacter::ToggleWalk()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+}
+
+void ABelicaCharacter::ToggleCrouch()
+{
+	if(GetCharacterMovement()->IsCrouching())
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
+	}
 }
 

@@ -44,6 +44,8 @@ void ABelicaController::OnPossess(APawn* aPawn)
 
 	EnhancedInputComponent->BindAction(WalkRunToggleAction, ETriggerEvent::Started, this, &ABelicaController::HandleWalk);
 	EnhancedInputComponent->BindAction(WalkRunToggleAction, ETriggerEvent::Completed, this, &ABelicaController::HandleRun);
+
+	EnhancedInputComponent->BindAction(ToggleCrouchAction, ETriggerEvent::Started, this, &ABelicaController::HandleCrouch);
 	
     EnhancedInputComponent->BindAction(FireWeaponAction, ETriggerEvent::Triggered, this, &ABelicaController::HandleFireWeaponStart);
     EnhancedInputComponent->BindAction(FireWeaponAction, ETriggerEvent::Completed, this, &ABelicaController::HandleFireWeaponEnd);
@@ -202,4 +204,9 @@ void ABelicaController::HandleRun()
 void ABelicaController::HandleWalk()
 {
 	Belica->ToggleWalk();
+}
+
+void ABelicaController::HandleCrouch()
+{
+	Belica->ToggleCrouch();
 }

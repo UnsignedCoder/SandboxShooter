@@ -88,6 +88,8 @@ public:
 
 	void ToggleRun();
 	void ToggleWalk();
+
+	void ToggleCrouch();
 private:
 	/**
 	 * @brief The camera boom component that positions the follow camera behind the character.
