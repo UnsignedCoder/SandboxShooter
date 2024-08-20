@@ -13,7 +13,7 @@
  * Initializes all the item components and sets up the default item state and properties.
  * Sets collision responses and binds the overlap events for the collision sphere.
  */
-AItem::AItem() : ItemCount(0), ItemRarity(EItemRarity::EIR_Common), ItemState(EItemState::EIS_InWorld),
+AItem::AItem() : ItemCount(0), ItemRarity(EItemRarity::EIR_MAX), ItemState(EItemState::EIS_InWorld),
                  // Initialize item rarity and state to default values
                  OverlappedItemCount(0), bShouldTraceForItem(false),
                  ThrowTime(4.0f), bIsFalling(false)
@@ -61,10 +61,10 @@ void AItem::BeginPlay()
 	if (ItemDetailsWidget)
 	{
 		ItemDetailsWidget->SetVisibility(false);
-	}
 
-	// Set the number of active stars based on the item's rarity
-	SetActiveStars();
+		// Set the number of active stars based on the item's rarity
+		SetActiveStars();
+	}
 
 	// Set the initial properties of the item based on its state
 	SetItemProperties(ItemState);
