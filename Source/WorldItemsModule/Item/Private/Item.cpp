@@ -14,9 +14,9 @@
  * Sets collision responses and binds the overlap events for the collision sphere.
  */
 AItem::AItem() : ItemCount(0), ItemRarity(EItemRarity::EIR_MAX), ItemState(EItemState::EIS_InWorld),
-                 // Initialize item rarity and state to default values
-                 OverlappedItemCount(0), bShouldTraceForItem(false),
-                 ThrowTime(4.0f), bIsFalling(false)
+				// Initialize item rarity and state to default values
+				OverlappedItemCount(0), bShouldTraceForItem(false),
+				ThrowTime(4.0f), bIsFalling(false)
 {
 	// Enable Tick() to be called every frame for this actor.
 	PrimaryActorTick.bCanEverTick = true;
@@ -26,13 +26,13 @@ AItem::AItem() : ItemCount(0), ItemRarity(EItemRarity::EIR_MAX), ItemState(EItem
 	SetRootComponent(ItemMesh);
 	ItemMesh->SetSimulatePhysics(false);
 	ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	ItemMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 
 	// Create the collision box component used for item interaction detection
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	CollisionBox->SetupAttachment(GetRootComponent());
-	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	CollisionBox->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
+	CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	CollisionBox->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 
 	// Create the widget component for displaying item details when hovered
 	ItemDetailsWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("ItemDetailsWidget"));
@@ -129,7 +129,7 @@ void AItem::HandleItemTrace()
  * @param SweepResult The result of the sweep, containing hit information.
  */
 void AItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-                           int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+							int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Check if the overlapping actor is the player character
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
@@ -151,7 +151,7 @@ void AItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Oth
  * @param OtherBodyIndex The index of the other body.
  */
 void AItem::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-                         int32 OtherBodyIndex)
+						int32 OtherBodyIndex)
 {
 	// Check if the overlapping actor is the player character
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
@@ -183,8 +183,8 @@ bool AItem::TraceForItems(FHitResult& HitItemResult)
 
 	// Convert the screen space crosshair location to a world space direction
 	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0),
-	                                                               CrosshairLocation, CrosshairWorldPosition,
-	                                                               CrosshairWorldDirection);
+																	CrosshairLocation, CrosshairWorldPosition,
+																	CrosshairWorldDirection);
 
 	if (bScreenToWorld)
 	{
@@ -301,14 +301,14 @@ void AItem::SetItemProperties(EItemState State)
 		ItemMesh->SetSimulatePhysics(false);
 		ItemMesh->SetEnableGravity(false);
 		ItemMesh->SetVisibility(true);
-		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ItemMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::Type::QueryOnly);
 
-		CollisionSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+		CollisionSphere->SetCollisionResponseToAllChannels(ECR_Overlap);
 		CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
-		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		CollisionBox->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
+		CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+		CollisionBox->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 
@@ -317,13 +317,13 @@ void AItem::SetItemProperties(EItemState State)
 		ItemMesh->SetSimulatePhysics(false);
 		ItemMesh->SetEnableGravity(false);
 		ItemMesh->SetVisibility(true);
-		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		CollisionSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 		CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
 
@@ -332,14 +332,13 @@ void AItem::SetItemProperties(EItemState State)
 		ItemMesh->SetSimulatePhysics(true);
 		ItemMesh->SetVisibility(true);
 		ItemMesh->SetEnableGravity(true);
-		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		ItemMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+		ItemMesh->SetCollisionResponseToAllChannels(ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::Type::PhysicsOnly);
 
-		CollisionSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 		CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionResponseToAllChannels(ECR_Ignore);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
 

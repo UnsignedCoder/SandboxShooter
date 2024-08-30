@@ -7,9 +7,12 @@
 
 #include "Camera/CameraComponent.h"
 #include "CharacterAttributeModule/WeaponHandling/Public/WeaponHandlingComponent.h"
+#include "Components/SphereComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "WorldItemsModule/Item/Public/Item.h"
+#include "WorldItemsModule/Weapon/Public/Weapon.h"
 
 /**
  * @brief Sets default values for this character's properties.
@@ -46,7 +49,16 @@ ABelicaCharacter::ABelicaCharacter()
 
     // Create a WeaponHandling component
     WeaponHandling = CreateDefaultSubobject<UWeaponHandlingComponent>(TEXT("WeaponHandling"));
+
+	PickupSphere = CreateDefaultSubobject<USphereComponent>(TEXT("PickupSphere"));
+	PickupSphere->SetupAttachment(RootComponent);
+	PickupSphere->SetSphereRadius(200.f);
+	PickupSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	PickupSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
+	PickupSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	
 }
+
 
 /**
  * @brief Called when the game starts or when spawned.
@@ -60,6 +72,9 @@ void ABelicaCharacter::BeginPlay()
 
     // Handle spawning of the default weapon
     HandleDefaultWeaponSpawn();
+
+	PickupSphere->OnComponentBeginOverlap.AddDynamic(this, &ABelicaCharacter::OnOverlapBegin);
+	PickupSphere->OnComponentEndOverlap.AddDynamic(this, &ABelicaCharacter::OnOverlapEnd);
 }
 
 /**
@@ -75,6 +90,10 @@ void ABelicaCharacter::Tick(float DeltaTime)
 
     // Calculate crosshair spread based on character's velocity and movement
     CalculateCrosshairSpread(DeltaTime);
+
+	if(WeaponHandling) {
+		WeaponHandling->ChangeCameraFOV(DeltaTime);
+	}
 }
 
 /**
@@ -136,6 +155,25 @@ void ABelicaCharacter::HandleDefaultWeaponSpawn()
     WeaponHandling->EquipWeapon(WeaponHandling->SpawnDefaultWeapon(), EquippedWeapon, RightHandWeaponSocket, GetMesh());
 }
 
+void ABelicaCharacter::HandleEquipWeapon()
+{
+	PickupSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
+	
+	if( EquipableItem ) {GEngine->AddOnScreenDebugMessage(1, 10.0f, FColor::Red, TEXT("Equipable Item") + EquipableItem->GetName());}
+
+	// Get the right-hand weapon socket
+	const USkeletalMeshSocket* RightHandWeaponSocket = GetMesh()->GetSocketByName("Hand_R_Weapon_Socket");
+	if(AWeapon* EquipableWeapon = Cast<AWeapon>(EquipableItem)) {
+		GEngine->AddOnScreenDebugMessage(2, 10.0f, FColor::Purple, TEXT("Equipable Weapon") + EquipableWeapon->GetName());
+
+		WeaponHandling->EquipWeapon(EquipableWeapon, EquippedWeapon, RightHandWeaponSocket, GetMesh());
+
+		GEngine->AddOnScreenDebugMessage(3, 10.0f, FColor::Green, TEXT("Equipped Weapon") + EquippedWeapon->GetName());
+	}
+
+	PickupSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
+}
+
 /**
  * @brief Unequips the currently equipped weapon.
  *
@@ -144,6 +182,7 @@ void ABelicaCharacter::HandleDefaultWeaponSpawn()
 void ABelicaCharacter::UnEquipWeapon()
 {
 	WeaponHandling->DropWeapon(EquippedWeapon);
+	EquippedWeapon = nullptr;
 }
 
 void ABelicaCharacter::StartAiming()
@@ -158,7 +197,7 @@ void ABelicaCharacter::StopAiming()
 
 void ABelicaCharacter::StartFIreWeapon()
 {
-	if (WeaponHandling->GetShouldFireWeapon())
+	if (WeaponHandling->GetShouldFireWeapon() && WeaponHandling->GetIsArmed())
 	{
 		// Get the Barrel Socket from the character's mesh
 		const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("SMG_Barrel");
@@ -200,3 +239,15 @@ void ABelicaCharacter::ToggleCrouch()
 	}
 }
 
+
+void ABelicaCharacter::OnOverlapBegin( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult ) {
+	AItem* PickupItem = Cast<AItem>(OtherActor);
+
+	GEngine->AddOnScreenDebugMessage(1, 0.5f, FColor::Red, TEXT("Overlap Begin: ") + OtherActor->GetName());
+	if(PickupItem) {
+		EquipableItem = PickupItem;
+	}
+}
+void ABelicaCharacter::OnOverlapEnd( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex ) {
+	EquipableItem = nullptr;
+}

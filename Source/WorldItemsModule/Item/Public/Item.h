@@ -61,7 +61,6 @@ public:
 	 * Initializes components and properties for the item actor, including collision and widget components.
 	 */
 	AItem();
-
 	/**
 	 * @brief Increases or decreases the count of overlapped items.
 	 * @param Amount The amount to adjust the overlapped item count by.

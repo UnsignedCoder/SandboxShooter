@@ -9,6 +9,12 @@
 #include "GameFramework/Character.h"
 #include "BelicaCharacter.generated.h"
 
+class USphereComponent;
+class AWeapon;
+class UWeaponHandlingComponent;
+class USpringArmComponent;
+class UCameraComponent;
+class AItem;
 /**
  * @class ABelicaCharacter
  * @brief This class represents the Belica character in the game.
@@ -30,6 +36,10 @@ public:
 	ABelicaCharacter();
 
 protected:
+	UFUNCTION()
+	void OnOverlapBegin( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult );
+	UFUNCTION()
+	void OnOverlapEnd( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex );
 	/**
 	 * @brief Called when the game starts or when the character is spawned.
 	 *
@@ -73,6 +83,7 @@ public:
 	 */
 	void HandleDefaultWeaponSpawn();
 
+	void HandleEquipWeapon();
 	/**
 	 * @brief Unequips the currently equipped weapon.
 	 *
@@ -98,7 +109,7 @@ private:
 	 * it to follow the character's movements.
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom;
 
 	/**
 	 * @brief The camera component that follows the character.
@@ -106,7 +117,10 @@ private:
 	 * This camera component is attached to the end of the camera boom and provides the player's view.
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
+	UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USphereComponent* PickupSphere;
 
 	/**
 	 * @brief The component responsible for handling weapon-related actions.
@@ -114,7 +128,7 @@ private:
 	 * This component manages weapon spawning, equipping, and other weapon-related functionality.
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = CharacterAttribute, meta = (AllowPrivateAccess = "true"))
-	class UWeaponHandlingComponent* WeaponHandling;
+	UWeaponHandlingComponent* WeaponHandling;
 
 	/**
 	 * @brief The animation montage used for firing the weapon from the hip.
@@ -138,7 +152,10 @@ private:
 	 * This represents the weapon currently equipped by the character.
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class AWeapon* EquippedWeapon;
+	AWeapon* EquippedWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	AItem* EquipableItem;
 
 public:
 	/**

@@ -16,20 +16,16 @@
  * Initializes the component with default values for camera field of view, aiming state, and bullet spread multipliers.
  * Also sets the component to be initialized when the game starts and to be ticked every frame.
  */
-UWeaponHandlingComponent::UWeaponHandlingComponent()
-	: DefaultCameraFOV(90),
-	  CurrentCameraFOV(DefaultCameraFOV),
-	  ZoomedCameraFOV(45),
-	  ZoomInterpSpeed(20),
-	  bIsAiming(false),
-	  AcceleratingCrosshairMultiplier(0),
-	  InAirCrosshairMultiplier(0),
-	  WeaponFireWeaponCrosshairMultiplier(0),
-	  AimingCrosshairMultiplier(0),
-	  bIsFiringWeapon(false),
-	  bShouldFireWeapon(true),
-	  WeaponFireRate(0.05), bIsArmed(false), bIsArmedPistol(false), bIsArmedRifle(false), bIsArmedShotGun(false)
-{
+UWeaponHandlingComponent::UWeaponHandlingComponent() : DefaultCameraFOV(90), CurrentCameraFOV(DefaultCameraFOV), ZoomedCameraFOV(45), ZoomInterpSpeed(20), bIsAiming(false),
+
+//Crosshair multipliers default values for bullet spread
+AcceleratingCrosshairMultiplier(0), InAirCrosshairMultiplier(0), WeaponFireWeaponCrosshairMultiplier(0), AimingCrosshairMultiplier(0),bIsFiringWeapon(false),
+
+//Weapon fire rate
+bShouldFireWeapon(true), WeaponFireRate(0.05),
+
+//Weapon Armed State
+bIsArmed(false), bIsArmedPistol(false), bIsArmedRifle(false), bIsArmedShotGun(false) {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.
 	// You can turn these features off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
@@ -39,10 +35,7 @@ UWeaponHandlingComponent::UWeaponHandlingComponent()
  * @brief Called when the game starts.
  * Calls the parent class's BeginPlay function.
  */
-void UWeaponHandlingComponent::BeginPlay()
-{
-	Super::BeginPlay();
-}
+void UWeaponHandlingComponent::BeginPlay() { Super::BeginPlay(); }
 
 /**
  * @brief Called every frame.
@@ -51,11 +44,7 @@ void UWeaponHandlingComponent::BeginPlay()
  * @param TickType The type of tick this frame.
  * @param ThisTickFunction The tick function that caused this to run.
  */
-void UWeaponHandlingComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                             FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
+void UWeaponHandlingComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) { Super::TickComponent(DeltaTime, TickType, ThisTickFunction); }
 
 /**
  * @brief Traces under the crosshair.
@@ -64,8 +53,7 @@ void UWeaponHandlingComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
  * @param TraceEndLocation The end location of the trace.
  * @return True if the trace hit something, false otherwise.
  */
-bool UWeaponHandlingComponent::TraceUnderCrosshair(FHitResult& TraceHitResult, FVector& TraceEndLocation)
-{
+bool UWeaponHandlingComponent::TraceUnderCrosshair( FHitResult& TraceHitResult, FVector& TraceEndLocation ) {
 	// Get the viewport size
 	FVector2D ViewportSize;
 	GetWorld()->GetGameViewport()->GetViewportSize(ViewportSize);
@@ -76,12 +64,9 @@ bool UWeaponHandlingComponent::TraceUnderCrosshair(FHitResult& TraceHitResult, F
 	FVector CrosshairWorldDirection;
 
 	// Convert the crosshair location from screen space to world space
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0),
-	                                                               CrosshairLocation, CrosshairWorldPosition,
-	                                                               CrosshairWorldDirection);
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0), CrosshairLocation, CrosshairWorldPosition, CrosshairWorldDirection);
 
-	if (bScreenToWorld)
-	{
+	if ( bScreenToWorld ) {
 		// Perform a line trace from the crosshair position into the world
 		const FVector TraceStart = CrosshairWorldPosition;
 		const FVector TraceEnd = TraceStart + CrosshairWorldDirection * 50000.f;
@@ -89,8 +74,7 @@ bool UWeaponHandlingComponent::TraceUnderCrosshair(FHitResult& TraceHitResult, F
 
 		// Perform the line trace
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility);
-		if (TraceHitResult.bBlockingHit)
-		{
+		if ( TraceHitResult.bBlockingHit ) {
 			// If the trace hit something, update the end location and return true
 			TraceEndLocation = TraceHitResult.Location;
 			return true;
@@ -107,14 +91,12 @@ bool UWeaponHandlingComponent::TraceUnderCrosshair(FHitResult& TraceHitResult, F
  * @param TraceEnd The end location of the trace.
  * @return True if the trace hit something, false otherwise.
  */
-bool UWeaponHandlingComponent::WeaponTrace(const FVector& TraceStart, FVector& TraceEnd)
-{
+bool UWeaponHandlingComponent::WeaponTrace( const FVector& TraceStart, FVector& TraceEnd ) {
 	// Perform a trace under the crosshair
 	FHitResult WeaponTraceHitResult;
 	bool bCrosshairHit = TraceUnderCrosshair(WeaponTraceHitResult, TraceEnd);
 
-	if (bCrosshairHit)
-	{
+	if ( bCrosshairHit ) {
 		// If the crosshair trace hit something, update the end location
 		TraceEnd = WeaponTraceHitResult.Location;
 	}
@@ -124,11 +106,9 @@ bool UWeaponHandlingComponent::WeaponTrace(const FVector& TraceStart, FVector& T
 	const FVector WeaponTraceStart = TraceStart;
 	const FVector StartToEnd = TraceEnd - TraceStart;
 	const FVector WeaponTraceEnd = TraceStart + StartToEnd * 1.25f;
-	GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd,
-	                                     ECollisionChannel::ECC_Visibility);
+	GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
 
-	if (WeaponTraceHit.bBlockingHit)
-	{
+	if ( WeaponTraceHit.bBlockingHit ) {
 		// If the weapon trace hit something, update the end location and return true
 		TraceEnd = WeaponTraceHit.Location;
 		return true;
@@ -141,22 +121,14 @@ bool UWeaponHandlingComponent::WeaponTrace(const FVector& TraceStart, FVector& T
  * @brief Changes the camera field of view based on whether the character is aiming or not.
  * @param DeltaTime The time since the last frame.
  */
-void UWeaponHandlingComponent::ChangeCameraFOV(float DeltaTime)
-{
+void UWeaponHandlingComponent::ChangeCameraFOV( float DeltaTime ) {
 	// Get the camera component
 	UCameraComponent* Camera = Cast<UCameraComponent>(GetOwner()->GetComponentByClass(UCameraComponent::StaticClass()));
-	if (Camera)
-	{
+	if ( Camera ) {
 		// If the character is aiming, interpolate the camera field of view towards the zoomed field of view
 		// Otherwise, interpolate it towards the default field of view
-		if (GetIsAiming())
-		{
-			CurrentCameraFOV = FMath::FInterpTo(CurrentCameraFOV, ZoomedCameraFOV, DeltaTime, ZoomInterpSpeed);
-		}
-		else
-		{
-			CurrentCameraFOV = FMath::FInterpTo(CurrentCameraFOV, DefaultCameraFOV, DeltaTime, ZoomInterpSpeed);
-		}
+		if ( GetIsAiming() ) { CurrentCameraFOV = FMath::FInterpTo(CurrentCameraFOV, ZoomedCameraFOV, DeltaTime, ZoomInterpSpeed); }
+		else { CurrentCameraFOV = FMath::FInterpTo(CurrentCameraFOV, DefaultCameraFOV, DeltaTime, ZoomInterpSpeed); }
 		// Set the camera's field of view
 		Camera->SetFieldOfView(CurrentCameraFOV);
 	}
@@ -166,8 +138,7 @@ void UWeaponHandlingComponent::ChangeCameraFOV(float DeltaTime)
  * @brief Sets the aiming state of the character.
  * @param bNewAiming The new aiming state.
  */
-void UWeaponHandlingComponent::SetIsAiming(bool bNewAiming)
-{
+void UWeaponHandlingComponent::SetIsAiming( bool bNewAiming ) {
 	// Set the aiming state
 	bIsAiming = bNewAiming;
 }
@@ -180,71 +151,45 @@ void UWeaponHandlingComponent::SetIsAiming(bool bNewAiming)
  * @param bIsInAir Whether the player is in the air.
  * @param CrosshairMultiplier The multiplier for the crosshair spread.
  */
-void UWeaponHandlingComponent::DynamicCrosshair(float DeltaTime, const float PlayerSpeed, const float MaxSpeed,
-                                                const bool bIsInAir, float& CrosshairMultiplier)
-{
+void UWeaponHandlingComponent::DynamicCrosshair( float DeltaTime, const float PlayerSpeed, const float MaxSpeed, const bool bIsInAir, float& CrosshairMultiplier ) {
 	// Calculate the crosshair spread based on player speed
 	FVector2D VelocityMultiplier{0, 1};
 	FVector2D MovementSpeed{0, MaxSpeed};
 	AcceleratingCrosshairMultiplier = FMath::GetMappedRangeValueClamped(MovementSpeed, VelocityMultiplier, PlayerSpeed);
 
 	// If the player is in the air, increase the crosshair spread
-	if (bIsInAir)
-	{
-		InAirCrosshairMultiplier = FMath::FInterpTo(InAirCrosshairMultiplier, 3.0f, DeltaTime, 20.0f);
-	}
-	else
-	{
-		InAirCrosshairMultiplier = FMath::FInterpTo(InAirCrosshairMultiplier, 0.0f, DeltaTime, 5.0f);
-	}
+	if ( bIsInAir ) { InAirCrosshairMultiplier = FMath::FInterpTo(InAirCrosshairMultiplier, 3.0f, DeltaTime, 20.0f); }
+	else { InAirCrosshairMultiplier = FMath::FInterpTo(InAirCrosshairMultiplier, 0.0f, DeltaTime, 5.0f); }
 
 	// If the player is aiming, decrease the crosshair spread
-	if (bIsAiming)
-	{
-		AimingCrosshairMultiplier = FMath::FInterpTo(AimingCrosshairMultiplier, -0.5f, DeltaTime, 12);
-	}
-	else
-	{
-		AimingCrosshairMultiplier = FMath::FInterpTo(AimingCrosshairMultiplier, 0.0f, DeltaTime, 15);
-	}
+	if ( bIsAiming ) { AimingCrosshairMultiplier = FMath::FInterpTo(AimingCrosshairMultiplier, -0.5f, DeltaTime, 12); }
+	else { AimingCrosshairMultiplier = FMath::FInterpTo(AimingCrosshairMultiplier, 0.0f, DeltaTime, 15); }
 
 	// If the player is firing, increase the crosshair spread
-	if (bIsFiringWeapon)
-	{
-		WeaponFireWeaponCrosshairMultiplier =
-			FMath::FInterpTo(WeaponFireWeaponCrosshairMultiplier, 0.3f, DeltaTime, 35);
-	}
-	else
-	{
-		WeaponFireWeaponCrosshairMultiplier =
-			FMath::FInterpTo(WeaponFireWeaponCrosshairMultiplier, 0.0f, DeltaTime, 60);
-	}
+	if ( bIsFiringWeapon ) { WeaponFireWeaponCrosshairMultiplier = FMath::FInterpTo(WeaponFireWeaponCrosshairMultiplier, 0.3f, DeltaTime, 35); }
+	else { WeaponFireWeaponCrosshairMultiplier = FMath::FInterpTo(WeaponFireWeaponCrosshairMultiplier, 0.0f, DeltaTime, 60); }
 
 	// Calculate the total crosshair spread
-	CrosshairMultiplier = 0.5 + AcceleratingCrosshairMultiplier + InAirCrosshairMultiplier + AimingCrosshairMultiplier +
-		WeaponFireWeaponCrosshairMultiplier;
+	CrosshairMultiplier = 0.5 + AcceleratingCrosshairMultiplier + InAirCrosshairMultiplier + AimingCrosshairMultiplier + WeaponFireWeaponCrosshairMultiplier;
 }
 
 /**
  * @brief Starts the firing of the weapon.
  * Sets the firing state to true and starts a timer to stop the firing after a certain duration.
  */
-void UWeaponHandlingComponent::SetWeaponFireState()
-{
+void UWeaponHandlingComponent::SetWeaponFireState() {
 	// Set the firing state to true
 	bIsFiringWeapon = true;
 
 	// Start a timer to stop firing after a certain duration
-	GetWorld()->GetTimerManager().SetTimer(DynamicCrosshairWeaponFireTimer, this,
-	                                       &UWeaponHandlingComponent::ResetWeaponFireState, 0.05f);
+	GetWorld()->GetTimerManager().SetTimer(DynamicCrosshairWeaponFireTimer, this, &UWeaponHandlingComponent::ResetWeaponFireState, 0.05f);
 }
 
 /**
  * @brief Stops the firing of the weapon.
  * Sets the firing state to false.
  */
-void UWeaponHandlingComponent::ResetWeaponFireState()
-{
+void UWeaponHandlingComponent::ResetWeaponFireState() {
 	// Set the firing state to false
 	bIsFiringWeapon = false;
 }
@@ -254,8 +199,7 @@ void UWeaponHandlingComponent::ResetWeaponFireState()
  * @param bShouldFire The new firing state.
  * @return The updated firing state.
  */
-bool UWeaponHandlingComponent::SetShouldFireWeapon(const bool bShouldFire)
-{
+bool UWeaponHandlingComponent::SetShouldFireWeapon( const bool bShouldFire ) {
 	bShouldFireWeapon = bShouldFire;
 	return bShouldFireWeapon;
 }
@@ -264,10 +208,7 @@ bool UWeaponHandlingComponent::SetShouldFireWeapon(const bool bShouldFire)
  * @brief Resets the weapon fire timer.
  * Sets the weapon to be ready to fire again.
  */
-void UWeaponHandlingComponent::AutoFireTimerReset()
-{
-	bShouldFireWeapon = true;
-}
+void UWeaponHandlingComponent::AutoFireTimerReset() { bShouldFireWeapon = true; }
 
 /**
  * @brief Sets the fire timer for auto-firing the weapon.
@@ -276,16 +217,13 @@ void UWeaponHandlingComponent::AutoFireTimerReset()
  * @param WeaponFireTraceStart The start location of the weapon fire trace.
  * @param WeaponFireTraceEnd The end location of the weapon fire trace.
  */
-void UWeaponHandlingComponent::SetFireTimer(const FTransform& BarrelSocketTransform,
-                                            const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd)
-{
+void UWeaponHandlingComponent::SetFireTimer( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd ) {
 	// Fire the weapon and prevent it from firing again until the timer resets
 	FireWeapon(BarrelSocketTransform, WeaponFireTraceStart, WeaponFireTraceEnd);
 	bShouldFireWeapon = false;
 
 	// Set a timer to reset the weapon fire state after the fire rate delay
-	GetWorld()->GetTimerManager().SetTimer(WeaponFireTimer, this, &UWeaponHandlingComponent::AutoFireTimerReset,
-	                                       WeaponFireRate);
+	GetWorld()->GetTimerManager().SetTimer(WeaponFireTimer, this, &UWeaponHandlingComponent::AutoFireTimerReset, WeaponFireRate);
 }
 
 /**
@@ -295,38 +233,25 @@ void UWeaponHandlingComponent::SetFireTimer(const FTransform& BarrelSocketTransf
  * @param WeaponFireTraceStart The start location of the weapon fire trace.
  * @param WeaponFireTraceEnd The end location of the weapon fire trace.
  */
-void UWeaponHandlingComponent::FireWeapon(const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart,
-                                          FVector& WeaponFireTraceEnd)
-{
-	if (bShouldFireWeapon)
-	{
+void UWeaponHandlingComponent::FireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd ) {
+	if ( bShouldFireWeapon ) {
 		// Play the fire sound
-		if (FireSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, GetOwner()->GetActorLocation());
-		}
+		if ( FireSound ) { UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, GetOwner()->GetActorLocation()); }
 
 		// Perform a weapon trace
 		WeaponTrace(WeaponFireTraceStart, WeaponFireTraceEnd);
 
 		// Spawn the muzzle flash
-		if (MuzzleFlash)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, BarrelSocketTransform);
-		}
+		if ( MuzzleFlash ) { UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, BarrelSocketTransform); }
 
 		// Spawn the impact particles
-		if (ImpactParticle)
-		{
+		if ( ImpactParticle ) {
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, WeaponFireTraceEnd);
 
 			// Spawn the beam particles
-			if (BeamParticle)
-			{
-				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-					GetWorld(), BeamParticle, BarrelSocketTransform);
-				if (Beam)
-				{
+			if ( BeamParticle ) {
+				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticle, BarrelSocketTransform);
+				if ( Beam ) {
 					// Set the target of the beam to the end location of the weapon fire trace
 					Beam->SetVectorParameter("Target", WeaponFireTraceEnd);
 				}
@@ -343,12 +268,8 @@ void UWeaponHandlingComponent::FireWeapon(const FTransform& BarrelSocketTransfor
  * Spawns the default weapon specified by DefaultWeaponClass and attaches it to the right hand weapon socket.
  * @return The spawned weapon actor.
  */
-AWeapon* UWeaponHandlingComponent::SpawnDefaultWeapon() const
-{
-	if (DefaultWeaponClass)
-	{
-		return GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
-	}
+AWeapon* UWeaponHandlingComponent::SpawnDefaultWeapon() const {
+	if ( DefaultWeaponClass ) { return GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass); }
 	return nullptr;
 }
 
@@ -360,52 +281,42 @@ AWeapon* UWeaponHandlingComponent::SpawnDefaultWeapon() const
  * @param WeaponSlotSocket The socket to attach the weapon to.
  * @param PlayerMesh The skeletal mesh component of the player.
  */
-void UWeaponHandlingComponent::EquipWeapon(AWeapon* WeaponToEquip, AWeapon*& EquippedWeapon,
-                                           const USkeletalMeshSocket* WeaponSlotSocket,
-                                           USkeletalMeshComponent* PlayerMesh)
-{
-	//Check if the item to equip is a weapon and yes the function should have been named equip item not equip weapon
-	if (Cast<AWeapon>(WeaponToEquip))
-	{
-		//Swaps weapon if there already is a weapon equipped by the player before picking up the new weapon
-		if(EquippedWeapon != nullptr)
-		{
-			DropWeapon(EquippedWeapon);
-			SetPlayerArmedState(EPlayerArmedState::EPAS_Unarmed);
-		}
-		// Attach the weapon to the specified socket on the player's mesh
-		if (WeaponSlotSocket)
-		{
-			WeaponSlotSocket->AttachActor(WeaponToEquip, PlayerMesh);
-		}
-		EquippedWeapon = WeaponToEquip;
-		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
-
-		if(EquippedWeapon != nullptr)
-		{
-			switch (EquippedWeapon->GetWeaponType())
-			{
-			case EWeaponType::EWT_Pistol:
-				SetPlayerArmedState(EPlayerArmedState::EPAS_Pistol);
-				break;
-			case EWeaponType::EWT_Rifle:
-				SetPlayerArmedState(EPlayerArmedState::EPAS_Rifle);
-				break;
-			case EWeaponType::EWT_Shotgun:
-				SetPlayerArmedState(EPlayerArmedState::EPAS_Shotgun);
-				break;
-			default: break;
-			}
-		}
-		else
-		{
-			SetPlayerArmedState(EPlayerArmedState::EPAS_Unarmed);
-		}
-	} else
-	{
-		//Placeholder for when the item to equip is not a weapon
+void UWeaponHandlingComponent::EquipWeapon( AWeapon* WeaponToEquip, AWeapon*& EquippedWeapon, const USkeletalMeshSocket* WeaponSlotSocket, USkeletalMeshComponent* PlayerMesh ) {
+	//Swaps weapon if there already is a weapon equipped by the player before picking up the new weapon
+	if ( EquippedWeapon != nullptr && WeaponToEquip == nullptr ) {
+		DropWeapon(EquippedWeapon);
 	}
 	
+	// Attach the weapon to the specified socket on the player's mesh
+	else if ( WeaponSlotSocket && WeaponToEquip != nullptr && EquippedWeapon == nullptr ) {
+		WeaponSlotSocket->AttachActor(WeaponToEquip, PlayerMesh);
+		EquippedWeapon = WeaponToEquip;
+
+		GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Red, TEXT("Weapon Equipipping: ") + EquippedWeapon->GetName());
+
+		if ( EquippedWeapon != nullptr ) {
+			EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+			GEngine->AddOnScreenDebugMessage(5, 5.f, FColor::Red, TEXT("Weapon State: ") + FString::FromInt((int)EquippedWeapon->GetItemState()));
+			GEngine->AddOnScreenDebugMessage(6, 5.f, FColor::Red, TEXT("Weapon Type: ") + FString::FromInt((int)EquippedWeapon->GetWeaponType()));
+			GEngine->AddOnScreenDebugMessage(7, 5.f, FColor::Red, TEXT("Weapon Name: ") + EquippedWeapon->GetName());
+
+			switch ( EquippedWeapon->GetWeaponType() ) {
+				case EWeaponType::EWT_Pistol: SetPlayerArmedState(EPlayerArmedState::EPAS_Pistol);
+				break;
+
+				case EWeaponType::EWT_Rifle: SetPlayerArmedState(EPlayerArmedState::EPAS_Rifle);
+				break;
+
+				case EWeaponType::EWT_Shotgun: SetPlayerArmedState(EPlayerArmedState::EPAS_Shotgun);
+				break;
+
+				default: break;
+			}
+		}
+	}
+	else {
+		SetPlayerArmedState(EPlayerArmedState::EPAS_Unarmed); 
+	}
 }
 
 /**
@@ -413,50 +324,43 @@ void UWeaponHandlingComponent::EquipWeapon(AWeapon* WeaponToEquip, AWeapon*& Equ
  * Detaches the weapon from the player's skeletal mesh and sets its state to falling.
  * @param WeaponToDrop A reference to the weapon to be dropped.
  */
-void UWeaponHandlingComponent::DropWeapon(AWeapon*& WeaponToDrop)
-{
-	if (WeaponToDrop)
-	{
+void UWeaponHandlingComponent::DropWeapon( AWeapon*& WeaponToDrop ) {
+	if ( WeaponToDrop ) {
 		// Detach the weapon from the player's mesh and set it to a falling state
 		const FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
 		WeaponToDrop->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
 
 		WeaponToDrop->SetItemState(EItemState::EIS_Falling);
 		WeaponToDrop->ThrowItem();
+		SetPlayerArmedState(EPlayerArmedState::EPAS_Unarmed);
 	}
 }
 
-void UWeaponHandlingComponent::SetPlayerArmedState(EPlayerArmedState NewPlayerArmedState)
-{
-	switch (NewPlayerArmedState)
-	{
-	case EPlayerArmedState::EPAS_Unarmed:
-		bIsArmed = false;
-		bIsArmedPistol = false;
-		bIsArmedRifle = false;
-		bIsArmedShotGun = false;
-		break;
+void UWeaponHandlingComponent::SetPlayerArmedState( EPlayerArmedState NewPlayerArmedState ) {
+	switch ( NewPlayerArmedState ) {
+		case EPlayerArmedState::EPAS_Unarmed: bIsArmed = false;
+			bIsArmedPistol = false;
+			bIsArmedRifle = false;
+			bIsArmedShotGun = false;
+			break;
 
-	case EPlayerArmedState::EPAS_Pistol:
-		bIsArmed = true;
-		bIsArmedPistol = true;
-		bIsArmedRifle = false;
-		bIsArmedShotGun = false;
-		break;
+		case EPlayerArmedState::EPAS_Pistol: bIsArmed = true;
+			bIsArmedPistol = true;
+			bIsArmedRifle = false;
+			bIsArmedShotGun = false;
+			break;
 
-	case EPlayerArmedState::EPAS_Rifle:
-		bIsArmed = true;
-		bIsArmedPistol = false;
-		bIsArmedRifle = true;
-		bIsArmedShotGun = false;
-		break;
+		case EPlayerArmedState::EPAS_Rifle: bIsArmed = true;
+			bIsArmedPistol = false;
+			bIsArmedRifle = true;
+			bIsArmedShotGun = false;
+			break;
 
-	case EPlayerArmedState::EPAS_Shotgun:
-		bIsArmed = true;
-		bIsArmedPistol = false;
-		bIsArmedRifle = false;
-		bIsArmedShotGun = true;
-		break;
-	default: break;;
+		case EPlayerArmedState::EPAS_Shotgun: bIsArmed = true;
+			bIsArmedPistol = false;
+			bIsArmedRifle = false;
+			bIsArmedShotGun = true;
+			break;
+		default: break;;
 	}
 }

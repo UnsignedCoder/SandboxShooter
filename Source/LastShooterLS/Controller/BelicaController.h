@@ -10,6 +10,9 @@
 #include "InputActionValue.h"
 #include "BelicaController.generated.h"
 
+class UInputAction;
+class UInputMappingContext;
+class ABelicaCharacter;
 /**
  * @class ABelicaController
  * @brief This class is a controller for the Belica character.
@@ -111,12 +114,9 @@ public:
 	 */
 	void HandleAimEnd();
 
-	/**
-	 * @brief Handles the unequip weapon action.
-	 * 
-	 * This function is called when the UnEquipWeapon action is triggered. It unequips the character's current weapon.
-	 */
-	void HandleUnEquipWeapon();
+	void HandleWeaponEquip();
+
+	void WeaponUnequip();
 
 	void HandleRun();
 
@@ -131,7 +131,7 @@ private:
 	 * This is a reference to the BelicaCharacter pawn that the controller is currently possessing.
 	 */
 	UPROPERTY()
-	class ABelicaCharacter* Belica;
+	ABelicaCharacter* Belica;
 
 	/**
 	 * @brief The enhanced input component for the controller.
@@ -139,7 +139,7 @@ private:
 	 * This component handles input actions and is used for binding actions to their handlers.
 	 */
 	UPROPERTY()
-	class UEnhancedInputComponent* EnhancedInputComponent;
+	UEnhancedInputComponent* EnhancedInputComponent;
 	
 	/**
 	 * @brief The input mapping context for the Belica character.
@@ -148,7 +148,7 @@ private:
 	 * the EnhancedInputLocalPlayerSubsystem.
 	 */
 	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputMappingContext* BelicaMappingContext;
+	UInputMappingContext* BelicaMappingContext;
 
 	/**
 	 * @brief The Move action.
@@ -156,7 +156,7 @@ private:
 	 * This action represents the movement input for the character.
 	 */
 	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* MoveAction;
+	UInputAction* MoveAction;
 
 	/**
 	 * @brief The Look action.
@@ -189,21 +189,18 @@ private:
 	 */
 	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* AimAction;
-
-	/**
-	 * @brief The UnEquipWeapon action.
-	 * 
-	 * This action represents the input to unequip the character's weapon.
-	 */
-	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* UnequipWeaponAction;
-
+	
 	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* WalkRunToggleAction;
 
 	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* ToggleCrouchAction;
 
+	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* WeaponUnequipAction;
+	
+	UPROPERTY(EditAnywhere, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* WeaponEquipAction;
 	/**
 	 * @brief The look sensitivity when the character is not aiming down sights.
 	 * 
