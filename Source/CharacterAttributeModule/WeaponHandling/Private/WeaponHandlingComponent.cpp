@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "WorldItemsModule/Weapon/Public/Weapon.h"
 
 
 /**
@@ -257,5 +258,18 @@ void UWeaponHandlingComponent::FireWeapon( const FTransform& BarrelSocketTransfo
 		// Update the weapon fire state
 		SetWeaponFireState();
 	}
+}
+
+void UWeaponHandlingComponent::EquipWeapon(AWeapon* WeaponToEquip, USkeletalMeshComponent* PlayerMesh, const FName WeaponSocket) {
+	if(WeaponToEquip) {
+		FAttachmentTransformRules WeaponAttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
+		WeaponToEquip->AttachToComponent(PlayerMesh, WeaponAttachmentTransformRules, WeaponSocket);
+	}
+}
+
+void UWeaponHandlingComponent::DropWeapon(AWeapon* WeaponToDrop) {
+	FDetachmentTransformRules WeaponDetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+	WeaponToDrop->DetachFromActor(WeaponDetachmentTransformRules);
+	
 }
 
