@@ -11,18 +11,8 @@
 #include "Components/ActorComponent.h"
 #include "WeaponHandlingComponent.generated.h"
 
-class AWeapon;
 class USoundCue;
 
-UENUM(BlueprintType)
-enum class EPlayerArmedState : uint8
-{
-	EPAS_Unarmed UMETA(DisplayName = "Unarmed"),
-	EPAS_Pistol UMETA(DisplayName = "Pistol"),
-	EPAS_Rifle UMETA(DisplayName = "Rifle"),
-	EPAS_Shotgun UMETA(DisplayName = "Shotgun"),
-	EPAS_MAX UMETA(DisplayName = "DefaultMax")
-};
 
 /**
  * @class UWeaponHandlingComponent
@@ -126,31 +116,6 @@ public:
 	 */
 	void SetFireTimer(const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd);
 
-	/**
-	 * @brief Spawns the default weapon for the character.
-	 * Spawns the default weapon specified by DefaultWeaponClass and attaches it to the right-hand weapon socket.
-	 * @return The spawned weapon actor.
-	 */
-	AWeapon* SpawnDefaultWeapon() const;
-
-	/**
-	 * @brief Equips the specified weapon.
-	 * Attaches the weapon to the given weapon socket on the player's skeletal mesh.
-	 * @param WeaponToEquip The weapon to be equipped.
-	 * @param EquippedWeapon A reference to the equipped weapon.
-	 * @param WeaponSlotSocket The socket to attach the weapon to.
-	 * @param PlayerMesh The skeletal mesh component of the player.
-	 */
-	void EquipWeapon(AWeapon* WeaponToEquip, AWeapon*& EquippedWeapon, const USkeletalMeshSocket* WeaponSlotSocket, USkeletalMeshComponent* PlayerMesh);
-
-	/**
-	 * @brief Drops the equipped weapon.
-	 * Detaches the weapon from the player's skeletal mesh and sets its state to falling.
-	 * @param WeaponToDrop A reference to the weapon to be dropped.
-	 */
-	void DropWeapon(AWeapon*& WeaponToDrop);
-
-	void SetPlayerArmedState(EPlayerArmedState NewPlayerArmedState);
 
 protected:
 	/**
@@ -185,10 +150,7 @@ private:
 	/** The particle system for the impact. */
 	UPROPERTY(EditAnywhere, Category = WeaponVfx, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticle = nullptr;
-
-	/** The class of the default weapon to be spawned. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AWeapon> DefaultWeaponClass;
+	
 
 //Aiming related variables 
 private:
@@ -254,17 +216,7 @@ private:
 
 //Weapon Armed State
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
-	bool bIsArmed;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
-	bool bIsArmedPistol;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
-	bool bIsArmedRifle;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
-	bool bIsArmedShotGun;
 
 public:
 	/**
@@ -279,11 +231,4 @@ public:
 	 */
 	FORCEINLINE bool GetShouldFireWeapon() const { return bShouldFireWeapon; }
 
-	FORCEINLINE bool GetIsArmed() const { return bIsArmed; }
-
-	FORCEINLINE bool GetIsArmedPistol() const { return bIsArmedPistol; }
-
-	FORCEINLINE bool GetIsArmedRifle() const { return bIsArmedRifle; }
-
-	FORCEINLINE bool GetIsArmedShotGun() const { return bIsArmedShotGun; }
 };

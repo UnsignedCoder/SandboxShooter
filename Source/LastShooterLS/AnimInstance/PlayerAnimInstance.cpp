@@ -55,14 +55,6 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 		// Check if the Belica character is aiming
 		bAiming = Belica->GetWeaponHandling()->GetIsAiming();
-
-		bIsArmed = Belica->GetWeaponHandling()->GetIsArmed();
-
-		bIsArmedWithPistol = Belica->GetWeaponHandling()->GetIsArmedPistol();
-
-		bIsArmedWithRifle = Belica->GetWeaponHandling()->GetIsArmedRifle();
-
-		bIsArmedWithShotgun = Belica->GetWeaponHandling()->GetIsArmedShotGun();
 		
 		// Calculate the movement offset yaw
 		MovementOffsetYaw = UKismetAnimationLibrary::CalculateDirection(PlayerVelocity, Belica->GetActorRotation());
