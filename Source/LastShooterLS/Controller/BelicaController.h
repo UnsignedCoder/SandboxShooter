@@ -114,6 +114,10 @@ public:
 	 */
 	void HandleAimEnd();
 
+	void HandleWeaponEquip();
+
+	void WeaponUnequip();
+
 	void HandleRun();
 
 	void HandleWalk();

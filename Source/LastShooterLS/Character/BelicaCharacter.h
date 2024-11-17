@@ -36,6 +36,10 @@ public:
 	ABelicaCharacter();
 
 protected:
+	UFUNCTION()
+	void OnOverlapBegin( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult );
+	UFUNCTION()
+	void OnOverlapEnd( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex );
 	/**
 	 * @brief Called when the game starts or when the character is spawned.
 	 *
@@ -71,6 +75,22 @@ public:
 	 */
 	void CalculateCrosshairSpread(float DeltaTime);
 
+	/**
+	 * @brief Handles the spawning of the default weapon.
+	 *
+	 * Retrieves the socket for attaching the weapon to the character's right hand and spawns
+	 * the default weapon using the WeaponHandling component.
+	 */
+	void HandleDefaultWeaponSpawn();
+
+	void HandleEquipWeapon();
+	/**
+	 * @brief Unequips the currently equipped weapon.
+	 *
+	 * Detaches the current weapon from the character and sets its state to unarmed.
+	 */
+	void UnEquipWeapon();
+
 	void StartAiming();
 	void StopAiming();
 
@@ -99,6 +119,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USphereComponent* PickupSphere;
+
 	/**
 	 * @brief The component responsible for handling weapon-related actions.
 	 *
@@ -122,6 +145,14 @@ private:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
 	float CrosshairSpreadMultiplier;
+
+	/**
+	 * @brief The current weapon the character is holding.
+	 *
+	 * This represents the weapon currently equipped by the character.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	AWeapon* EquippedWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	AItem* EquipableItem;

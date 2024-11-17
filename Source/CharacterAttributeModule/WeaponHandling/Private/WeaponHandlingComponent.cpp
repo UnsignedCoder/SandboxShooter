@@ -5,11 +5,11 @@
 
 #include "CharacterAttributeModule/WeaponHandling/Public/WeaponHandlingComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "WorldItemsModule/Weapon/Public/Weapon.h"
-
 
 /**
  * @brief Sets default values for this component's properties.
@@ -22,7 +22,10 @@ UWeaponHandlingComponent::UWeaponHandlingComponent() : DefaultCameraFOV(90), Cur
 AcceleratingCrosshairMultiplier(0), InAirCrosshairMultiplier(0), WeaponFireWeaponCrosshairMultiplier(0), AimingCrosshairMultiplier(0),bIsFiringWeapon(false),
 
 //Weapon fire rate
-bShouldFireWeapon(true), WeaponFireRate(0.05) {
+bShouldFireWeapon(true), WeaponFireRate(0.05),
+
+//Weapon Armed State
+bIsArmed(false), bIsArmedPistol(false), bIsArmedRifle(false), bIsArmedShotGun(false) {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.
 	// You can turn these features off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
@@ -260,16 +263,104 @@ void UWeaponHandlingComponent::FireWeapon( const FTransform& BarrelSocketTransfo
 	}
 }
 
-void UWeaponHandlingComponent::EquipWeapon(AWeapon* WeaponToEquip, USkeletalMeshComponent* PlayerMesh, const FName WeaponSocket) {
-	if(WeaponToEquip) {
-		FAttachmentTransformRules WeaponAttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
-		WeaponToEquip->AttachToComponent(PlayerMesh, WeaponAttachmentTransformRules, WeaponSocket);
+/**
+ * @brief Spawns the default weapon for the character.
+ * Spawns the default weapon specified by DefaultWeaponClass and attaches it to the right hand weapon socket.
+ * @return The spawned weapon actor.
+ */
+AWeapon* UWeaponHandlingComponent::SpawnDefaultWeapon() const{
+	if ( DefaultWeaponClass ) { return GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass); }
+	return nullptr;
+}
+
+/**
+ * @brief Equips the specified weapon.
+ * Attaches the weapon to the given weapon socket on the player's skeletal mesh.
+ * @param WeaponToEquip The weapon to be equipped.
+ * @param EquippedWeapon A reference to the equipped weapon.
+ * @param WeaponSlotSocket The socket to attach the weapon to.
+ * @param PlayerMesh The skeletal mesh component of the player.
+ */
+void UWeaponHandlingComponent::EquipWeapon(AWeapon*& EquippedWeapon, const USkeletalMeshSocket* WeaponSlotSocket, USkeletalMeshComponent* PlayerMesh ) {
+	// Attach the weapon to the specified socket on the player's mesh
+	if ( WeaponSlotSocket && WeaponToEquip != nullptr && EquippedWeapon == nullptr ) {
+		WeaponSlotSocket->AttachActor(WeaponToEquip, PlayerMesh);
+		EquippedWeapon = WeaponToEquip;
+
+		if ( EquippedWeapon != nullptr ) {
+			EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+
+			switch ( EquippedWeapon->GetWeaponType() ) {
+			case EWeaponType::EWT_Pistol: SetPlayerArmedState(EPlayerArmedState::EPAS_Pistol);
+				break;
+
+			case EWeaponType::EWT_Rifle: SetPlayerArmedState(EPlayerArmedState::EPAS_Rifle);
+				break;
+
+			case EWeaponType::EWT_Shotgun: SetPlayerArmedState(EPlayerArmedState::EPAS_Shotgun);
+				break;
+
+			default: break;
+			}
+		}
+		GEngine->AddOnScreenDebugMessage(5, 10.f, FColor::Red, TEXT("Equipped Weapon Name: ") + EquippedWeapon->GetName());
+		GEngine->AddOnScreenDebugMessage(6, 10.f, FColor::Red, TEXT("Weapon Type: ") + FString::FromInt((int)EquippedWeapon->GetWeaponType()));
+		GEngine->AddOnScreenDebugMessage(7, 10.f, FColor::Red, TEXT("Weapon State: ") + FString::FromInt((int)EquippedWeapon->GetItemState()));
+		GEngine->AddOnScreenDebugMessage(8, 10.f, FColor::Red, TEXT("Player Armed State: ") + FString::FromInt((int)GetIsArmed()));
+		GEngine->AddOnScreenDebugMessage(9, 10.f, FColor::Red, TEXT("Player Armed Pistol: ") + FString::FromInt((int)GetIsArmedPistol()));
+		GEngine->AddOnScreenDebugMessage(10, 10.f, FColor::Red, TEXT("Player Armed Rifle: ") + FString::FromInt((int)GetIsArmedRifle()));
+		GEngine->AddOnScreenDebugMessage(11, 10.f, FColor::Red, TEXT("Player Armed Shotgun: ") + FString::FromInt((int)GetIsArmedShotGun()));
+	}
+	else {
+		SetPlayerArmedState(EPlayerArmedState::EPAS_Unarmed); 
 	}
 }
 
-void UWeaponHandlingComponent::DropWeapon(AWeapon* WeaponToDrop) {
-	FDetachmentTransformRules WeaponDetachmentTransformRules(EDetachmentRule::KeepWorld, true);
-	WeaponToDrop->DetachFromActor(WeaponDetachmentTransformRules);
-	
+/**
+ * @brief Drops the equipped weapon.
+ * Detaches the weapon from the player's skeletal mesh and sets its state to falling.
+ * @param WeaponToDrop A reference to the weapon to be dropped.
+ */
+void UWeaponHandlingComponent::DropWeapon( AWeapon*& WeaponToDrop) {
+	if ( WeaponToDrop ) {
+		
+		// Detach the weapon from the player's mesh and set it to a falling state
+		const FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+		WeaponToDrop->DetachFromActor(DetachmentTransformRules);
+		WeaponToDrop->SetItemState(EItemState::EIS_Falling);
+		WeaponToDrop->ThrowItem();
+		
+	}
 }
 
+void UWeaponHandlingComponent::SetPlayerArmedState( EPlayerArmedState NewPlayerArmedState ) {
+	switch ( NewPlayerArmedState )  {
+		case EPlayerArmedState::EPAS_Unarmed: bIsArmed = false;
+			bIsArmedPistol = false;
+			bIsArmedRifle = false;
+			bIsArmedShotGun = false;
+			break;
+
+		case EPlayerArmedState::EPAS_Pistol:
+			bIsArmed = true;
+			bIsArmedPistol = true;
+			bIsArmedRifle = false;
+			bIsArmedShotGun = false;
+			break;
+
+		case EPlayerArmedState::EPAS_Rifle:
+			bIsArmed = true;
+			bIsArmedPistol = false;
+			bIsArmedRifle = true;
+			bIsArmedShotGun = false;
+			break;
+
+		case EPlayerArmedState::EPAS_Shotgun:
+			bIsArmed = true;
+			bIsArmedPistol = false;
+			bIsArmedRifle = false;
+			bIsArmedShotGun = true;
+			break;
+		default: break;;
+	} 
+}

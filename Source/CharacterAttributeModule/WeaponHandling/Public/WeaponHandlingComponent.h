@@ -14,6 +14,15 @@
 class AWeapon;
 class USoundCue;
 
+UENUM(BlueprintType)
+enum class EPlayerArmedState : uint8
+{
+	EPAS_Unarmed UMETA(DisplayName = "Unarmed"),
+	EPAS_Pistol UMETA(DisplayName = "Pistol"),
+	EPAS_Rifle UMETA(DisplayName = "Rifle"),
+	EPAS_Shotgun UMETA(DisplayName = "Shotgun"),
+	EPAS_MAX UMETA(DisplayName = "DefaultMax")
+};
 
 /**
  * @class UWeaponHandlingComponent
@@ -22,7 +31,8 @@ class USoundCue;
  * It inherits from the UActorComponent class and provides methods for firing a weapon and tracing under the crosshair.
  */
 UCLASS(ClassGroup = (CharacterAttribute), meta = (BlueprintSpawnableComponent))
-class CHARACTERATTRIBUTEMODULE_API UWeaponHandlingComponent : public UActorComponent {
+class CHARACTERATTRIBUTEMODULE_API UWeaponHandlingComponent : public UActorComponent
+{
 	GENERATED_BODY()
 
 public:
@@ -32,13 +42,22 @@ public:
 	UWeaponHandlingComponent();
 
 	/**
+	 * @brief Fires the weapon.
+	 * Plays the fire sound, performs a weapon trace, and spawns the muzzle flash and impact particles.
+	 * @param BarrelSocketTransform The transform of the barrel socket.
+	 * @param WeaponFireTraceStart The start location of the weapon fire trace.
+	 * @param WeaponFireTraceEnd The end location of the weapon fire trace.
+	 */
+	void FireWeapon(const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd);
+
+	/**
 	 * @brief Traces under the crosshair.
 	 * Performs a line trace from the center of the screen and checks if it hits anything.
 	 * @param TraceHitResult The result of the trace.
 	 * @param TraceEndLocation The end location of the trace.
 	 * @return True if the trace hit something, false otherwise.
 	 */
-	bool TraceUnderCrosshair( FHitResult& TraceHitResult, FVector& TraceEndLocation );
+	bool TraceUnderCrosshair(FHitResult& TraceHitResult, FVector& TraceEndLocation);
 
 	/**
 	 * @brief Performs a weapon trace.
@@ -47,20 +66,20 @@ public:
 	 * @param TraceEnd The end location of the trace.
 	 * @return True if the trace hit something, false otherwise.
 	 */
-	bool WeaponTrace( const FVector& TraceStart, FVector& TraceEnd );
+	bool WeaponTrace(const FVector& TraceStart, FVector& TraceEnd);
 
 	/**
 	 * @brief Changes the camera field of view based on aiming state.
 	 * Interpolates the camera's field of view towards the zoomed or default value based on aiming.
 	 * @param DeltaTime The time since the last frame.
 	 */
-	void ChangeCameraFOV( float DeltaTime );
+	void ChangeCameraFOV(float DeltaTime);
 
 	/**
 	 * @brief Sets the aiming state of the character.
 	 * @param bNewAiming The new aiming state.
 	 */
-	void SetIsAiming( bool bNewAiming );
+	void SetIsAiming(bool bNewAiming);
 
 	/**
 	 * @brief Adjusts the crosshair spread based on various factors.
@@ -71,9 +90,8 @@ public:
 	 * @param bIsInAir Whether the player is in the air. 
 	 * @param CrosshairMultiplier The multiplier for the crosshair spread.
 	 */
-	void DynamicCrosshair( float DeltaTime, const float PlayerSpeed, const float MaxSpeed, const bool bIsInAir, float& CrosshairMultiplier );
+	void DynamicCrosshair(float DeltaTime, const float PlayerSpeed, const float MaxSpeed, const bool bIsInAir, float& CrosshairMultiplier);
 
-public:
 	/**
 	 * @brief Starts the firing of the weapon.
 	 * Sets the firing state to true and starts a timer to stop the firing after a certain duration.
@@ -97,7 +115,7 @@ public:
 	 * @param bShouldFire The new firing state.
 	 * @return True if the firing state was successfully set, false otherwise.
 	 */
-	bool SetShouldFireWeapon( bool bShouldFire );
+	bool SetShouldFireWeapon(bool bShouldFire);
 
 	/**
 	 * @brief Sets a timer for the weapon fire.
@@ -106,21 +124,33 @@ public:
 	 * @param WeaponFireTraceStart The start location of the weapon fire trace.
 	 * @param WeaponFireTraceEnd The end location of the weapon fire trace.
 	 */
-	void SetFireTimer( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd );
+	void SetFireTimer(const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd);
 
 	/**
- * @brief Fires the weapon.
- * Plays the fire sound, performs a weapon trace, and spawns the muzzle flash and impact particles.
- * @param BarrelSocketTransform The transform of the barrel socket.
- * @param WeaponFireTraceStart The start location of the weapon fire trace.
- * @param WeaponFireTraceEnd The end location of the weapon fire trace.
- */
-	void FireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd );
+	 * @brief Spawns the default weapon for the character.
+	 * Spawns the default weapon specified by DefaultWeaponClass and attaches it to the right-hand weapon socket.
+	 * @return The spawned weapon actor.
+	 */
+	AWeapon* SpawnDefaultWeapon() const;
 
-public:
-	void EquipWeapon( AWeapon* WeaponToEquip, USkeletalMeshComponent* PlayerMesh, const FName WeaponSocket );
+	/**
+	 * @brief Equips the specified weapon.
+	 * Attaches the weapon to the given weapon socket on the player's skeletal mesh.
+	 * @param WeaponToEquip The weapon to be equipped.
+	 * @param EquippedWeapon A reference to the equipped weapon.
+	 * @param WeaponSlotSocket The socket to attach the weapon to.
+	 * @param PlayerMesh The skeletal mesh component of the player.
+	 */
+	void EquipWeapon(AWeapon* WeaponToEquip, AWeapon*& EquippedWeapon, const USkeletalMeshSocket* WeaponSlotSocket, USkeletalMeshComponent* PlayerMesh);
 
-	void DropWeapon( AWeapon* WeaponToDrop );
+	/**
+	 * @brief Drops the equipped weapon.
+	 * Detaches the weapon from the player's skeletal mesh and sets its state to falling.
+	 * @param WeaponToDrop A reference to the weapon to be dropped.
+	 */
+	void DropWeapon(AWeapon*& WeaponToDrop);
+
+	void SetPlayerArmedState(EPlayerArmedState NewPlayerArmedState);
 
 protected:
 	/**
@@ -136,7 +166,7 @@ protected:
 	 * @param TickType The type of tick this frame.
 	 * @param ThisTickFunction The tick function that caused this to run.
 	 */
-	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
 	//Weapon VFX
@@ -156,8 +186,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = WeaponVfx, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticle = nullptr;
 
+	/** The class of the default weapon to be spawned. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWeapon> DefaultWeaponClass;
 
-	//Aiming related variables 
+//Aiming related variables 
 private:
 	/** The default camera field of view. */
 	UPROPERTY(EditAnywhere, Category = "Field of View", meta = (AllowPrivateAccess = "true"))
@@ -179,7 +212,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Field of View", meta = (AllowPrivateAccess = "true"))
 	bool bIsAiming;
 
-	//Dynamic Crosshair Variables
+//Dynamic Crosshair Variables
 private:
 	/** The crosshair spread multiplier based on player speed. */
 	UPROPERTY(VisibleAnywhere, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
@@ -205,7 +238,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
 	FTimerHandle DynamicCrosshairWeaponFireTimer;
 
-	//Firing weapon Variables
+//Firing weapon Variables
 private:
 	/** The timer handle for auto firing the weapon. */
 	UPROPERTY(EditAnywhere, Category = Weapon, meta = (AllowPrivateAccess = "true"))
@@ -219,9 +252,19 @@ private:
 	UPROPERTY(EditAnywhere, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	float WeaponFireRate;
 
-	//Weapon Armed State
+//Weapon Armed State
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
+	bool bIsArmed;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
+	bool bIsArmedPistol;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
+	bool bIsArmedRifle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="PlayerArmedState", meta = (AllowPrivateAccess = true))
+	bool bIsArmedShotGun;
 
 public:
 	/**
@@ -235,4 +278,12 @@ public:
 	 * @return True if the weapon should fire, false otherwise.
 	 */
 	FORCEINLINE bool GetShouldFireWeapon() const { return bShouldFireWeapon; }
+
+	FORCEINLINE bool GetIsArmed() const { return bIsArmed; }
+
+	FORCEINLINE bool GetIsArmedPistol() const { return bIsArmedPistol; }
+
+	FORCEINLINE bool GetIsArmedRifle() const { return bIsArmedRifle; }
+
+	FORCEINLINE bool GetIsArmedShotGun() const { return bIsArmedShotGun; }
 };

@@ -31,9 +31,7 @@ void ABelicaController::OnPossess( APawn* aPawn ) {
 	checkf(EnhancedInputComponent, TEXT("Enhanced Input component is valid"));
 
 	// Add the BelicaMappingContext to the EnhancedInputLocalPlayerSubsystem
-	if ( UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()) ) {
-		Subsystem->AddMappingContext(BelicaMappingContext, 0);
-	}
+	if ( UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()) ) { Subsystem->AddMappingContext(BelicaMappingContext, 0); }
 
 	// Bind input actions to their respective methods
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABelicaController::Move);
@@ -50,6 +48,9 @@ void ABelicaController::OnPossess( APawn* aPawn ) {
 
 	EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ABelicaController::HandleAimStart);
 	EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ABelicaController::HandleAimEnd);
+
+	EnhancedInputComponent->BindAction(WeaponEquipAction, ETriggerEvent::Triggered, this, &ABelicaController::HandleWeaponEquip);
+	EnhancedInputComponent->BindAction(WeaponUnequipAction, ETriggerEvent::Triggered, this, &ABelicaController::WeaponUnequip);
 }
 
 /**
@@ -153,6 +154,10 @@ void ABelicaController::HandleAimStart() { Belica->StartAiming(); }
  * This function is invoked when the Aim action is completed. It sets the aiming status to false.
  */
 void ABelicaController::HandleAimEnd() { Belica->StopAiming(); }
+
+void ABelicaController::HandleWeaponEquip() { Belica->HandleEquipWeapon(); }
+
+void ABelicaController::WeaponUnequip() { Belica->UnEquipWeapon(); }
 
 void ABelicaController::HandleRun() { Belica->ToggleRun(); }
 
