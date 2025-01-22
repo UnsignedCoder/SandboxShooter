@@ -4,6 +4,12 @@ Intermediate/
 DerivedDataCache/
 Build/
 Content/
+.diversion/
+
+*.dvignore
+
+*.vsconfig
+LastShooterLS.sln.DotSettings.user
 
 # Visual Studio files
 .vs/

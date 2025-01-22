@@ -64,9 +64,10 @@ public:
 	 * Performs a line trace from the weapon to the location under the crosshair and checks if it hits anything.
 	 * @param TraceStart The start location of the trace.
 	 * @param TraceEnd The end location of the trace.
+	 * @param TraceHitResult
 	 * @return True if the trace hit something, false otherwise.
 	 */
-	bool WeaponTrace(const FVector& TraceStart, FVector& TraceEnd);
+	bool WeaponTrace( const FVector& TraceStart, FVector& TraceEnd, FHitResult& TraceHitResult );
 
 	/**
 	 * @brief Changes the camera field of view based on aiming state.
@@ -171,19 +172,19 @@ protected:
 private:
 	//Weapon VFX
 	/** The sound to play when the weapon is fired. */
-	UPROPERTY(EditAnywhere, Category = Sound, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Weapon|Sound", meta = (AllowPrivateAccess = "true"))
 	USoundCue* FireSound = nullptr;
 
 	/** The particle system for the muzzle flash. */
-	UPROPERTY(EditAnywhere, Category = WeaponVfx, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Weapon|WeaponVfx", meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* MuzzleFlash = nullptr;
 
 	/** The particle system for the beam. */
-	UPROPERTY(EditAnywhere, Category = WeaponVfx, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Weapon|WeaponVfx", meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BeamParticle = nullptr;
 
 	/** The particle system for the impact. */
-	UPROPERTY(EditAnywhere, Category = WeaponVfx, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category = "Weapon|WeaponVfx", meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticle = nullptr;
 
 	/** The class of the default weapon to be spawned. */
@@ -241,7 +242,7 @@ private:
 //Firing weapon Variables
 private:
 	/** The timer handle for auto firing the weapon. */
-	UPROPERTY(EditAnywhere, Category = Weapon, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY()
 	FTimerHandle WeaponFireTimer;
 
 	/** True if the weapon should fire, false otherwise. */

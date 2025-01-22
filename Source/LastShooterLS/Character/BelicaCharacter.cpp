@@ -20,8 +20,7 @@
  * Initializes the character with a camera boom to keep the camera behind the character,
  * a follow camera, and a WeaponHandling component. Configures the character to be ticked every frame.
  */
-ABelicaCharacter::ABelicaCharacter()
-{
+ABelicaCharacter::ABelicaCharacter() {
 	
     // Set this character to call Tick() every frame. You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
@@ -56,7 +55,6 @@ ABelicaCharacter::ABelicaCharacter()
 	PickupSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	PickupSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
 	PickupSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	
 }
 
 
@@ -66,13 +64,11 @@ ABelicaCharacter::ABelicaCharacter()
  * Initializes the character by calling the parent class's BeginPlay function
  * and handling the default weapon spawn.
  */
-void ABelicaCharacter::BeginPlay()
-{
+void ABelicaCharacter::BeginPlay() {
     Super::BeginPlay();
 
 	FTimerDelegate TestTimerDelegate;
-	TestTimerDelegate.BindLambda([this]()
-	{
+	TestTimerDelegate.BindLambda([this](){
 		// Handle spawning of the default weapon
 		HandleDefaultWeaponSpawn();
 
@@ -82,9 +78,8 @@ void ABelicaCharacter::BeginPlay()
 
 	FTimerHandle TestHandle;
 	GetWorldTimerManager().SetTimer(TestHandle, TestTimerDelegate, 1.f,false);
-
-    
 }
+
 
 /**
  * @brief Called every frame.
@@ -93,8 +88,7 @@ void ABelicaCharacter::BeginPlay()
  * the crosshair spread based on the character's movement and status.
  * @param DeltaTime The time since the last frame.
  */
-void ABelicaCharacter::Tick(float DeltaTime)
-{
+void ABelicaCharacter::Tick(float DeltaTime) {
     Super::Tick(DeltaTime);
 
     // Calculate crosshair spread based on character's velocity and movement
@@ -105,14 +99,14 @@ void ABelicaCharacter::Tick(float DeltaTime)
 	}
 }
 
+
 /**
  * @brief Plays the weapon fire montage.
  *
  * Retrieves the character's animation instance and plays the HipFireMontage if
  * both the animation instance and the montage are valid. Jumps to the start of the montage.
  */
-void ABelicaCharacter::PlayWeaponFireMontage()
-{
+void ABelicaCharacter::PlayWeaponFireMontage() {
     // Get the character's animation instance
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
@@ -124,6 +118,7 @@ void ABelicaCharacter::PlayWeaponFireMontage()
     }
 }
 
+
 /**
  * @brief Calculates the crosshair spread.
  *
@@ -132,8 +127,7 @@ void ABelicaCharacter::PlayWeaponFireMontage()
  * the crosshair spread based on current conditions.
  * @param DeltaTime The time since the last frame.
  */
-void ABelicaCharacter::CalculateCrosshairSpread(float DeltaTime)
-{
+void ABelicaCharacter::CalculateCrosshairSpread(float DeltaTime) {
     // Get the player's horizontal velocity
     FVector PlayerVelocity = GetCharacterMovement()->Velocity;
     PlayerVelocity.Z = 0;
@@ -149,24 +143,24 @@ void ABelicaCharacter::CalculateCrosshairSpread(float DeltaTime)
     WeaponHandling->DynamicCrosshair(DeltaTime, PlayerSpeed, PlayerMaxSpeed, bPlayerIsFalling, CrosshairSpreadMultiplier);
 }
 
+
 /**
  * @brief Handles the default weapon spawn.
  *
  * Retrieves the socket for the weapon attachment on the character's right hand
  * and spawns the default weapon using the WeaponHandling component.
  */
-void ABelicaCharacter::HandleDefaultWeaponSpawn()
-{
+void ABelicaCharacter::HandleDefaultWeaponSpawn() {
 	// Get the right-hand weapon socket
 	const USkeletalMeshSocket* RightHandWeaponSocket = GetMesh()->GetSocketByName("Hand_R_Weapon_Socket");
 
 	// Spawn the default weapon and attach it to the right-hand socket
 	AWeapon* Weapon = WeaponHandling->SpawnDefaultWeapon();
-	WeaponHandling->EquipWeapon(EquippedWeapon, RightHandWeaponSocket, GetMesh());
+	WeaponHandling->EquipWeapon(Weapon,EquippedWeapon, RightHandWeaponSocket, GetMesh());
 }
 
-void ABelicaCharacter::HandleEquipWeapon()
-{
+
+void ABelicaCharacter::HandleEquipWeapon() {
 	PickupSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
 	
 	if( EquipableItem ) {GEngine->AddOnScreenDebugMessage(1, 10.0f, FColor::Red, TEXT("Equipable Item") + EquipableItem->GetName());}
@@ -184,34 +178,36 @@ void ABelicaCharacter::HandleEquipWeapon()
 	PickupSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 }
 
+
 /**
  * @brief Unequips the currently equipped weapon.
  *
  * Detaches the current weapon from the character and sets its state to unarmed.
  */
-void ABelicaCharacter::UnEquipWeapon()
-{
+void ABelicaCharacter::UnEquipWeapon() {
 	WeaponHandling->DropWeapon(EquippedWeapon);
 	EquippedWeapon = nullptr;
 	
 	WeaponHandling->SetPlayerArmedState(EPlayerArmedState::EPAS_Unarmed);
 }
 
-void ABelicaCharacter::StartAiming()
-{
+
+void ABelicaCharacter::StartAiming() {
 	WeaponHandling->SetIsAiming(true);
 }
 
-void ABelicaCharacter::StopAiming()
-{
+
+void ABelicaCharacter::StopAiming() {
 	WeaponHandling->SetIsAiming(false);
 }
 
+
 void ABelicaCharacter::StartFIreWeapon()
 {
-	if(EquippedWeapon) {GEngine->AddOnScreenDebugMessage(5, 15.f, FColor::Red, TEXT("Equipped Weapon Name: ") + EquippedWeapon->GetName());}
-	if (WeaponHandling->GetShouldFireWeapon() && WeaponHandling->GetIsArmed())
-	{
+	if(EquippedWeapon) {
+		GEngine->AddOnScreenDebugMessage(5, 15.f, FColor::Red, TEXT("Equipped Weapon Name: ") + EquippedWeapon->GetName());
+	}
+	if (WeaponHandling->GetShouldFireWeapon() && WeaponHandling->GetIsArmed()) {
 		// Get the Barrel Socket from the character's mesh
 		const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("SMG_Barrel");
 		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
@@ -225,29 +221,26 @@ void ABelicaCharacter::StartFIreWeapon()
 	}
 }
 
-void ABelicaCharacter::EndWeaponFIre()
-{
+
+void ABelicaCharacter::EndWeaponFIre() {
 	WeaponHandling->SetShouldFireWeapon(true);
 }
 
-void ABelicaCharacter::ToggleRun()
-{
+
+void ABelicaCharacter::ToggleRun() {
 	GetCharacterMovement()->MaxWalkSpeed = 900.0f;
 }
 
-void ABelicaCharacter::ToggleWalk()
-{
+
+void ABelicaCharacter::ToggleWalk() {
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 }
 
-void ABelicaCharacter::ToggleCrouch()
-{
-	if(GetCharacterMovement()->IsCrouching())
-	{
+
+void ABelicaCharacter::ToggleCrouch() {
+	if(GetCharacterMovement()->IsCrouching()) {
 		UnCrouch();
-	}
-	else
-	{
+	} else {
 		Crouch();
 	}
 }
@@ -261,6 +254,8 @@ void ABelicaCharacter::OnOverlapBegin( UPrimitiveComponent* OverlappedComponent,
 		EquipableItem = PickupItem;
 	}
 }
+
+
 void ABelicaCharacter::OnOverlapEnd( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex ) {
 	EquipableItem = nullptr;
 }

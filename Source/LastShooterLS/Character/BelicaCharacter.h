@@ -1,6 +1,12 @@
 ﻿/**
  * @file BelicaCharacter.h
- * @brief This file contains the declaration of the ABelicaCharacter class.
+ * @brief Defines the primary player character class with first-person shooter mechanics.
+ * 
+ * This character class implements core FPS gameplay systems including:
+ * - Weapon management and firing mechanics
+ * - Dynamic crosshair system that responds to player state
+ * - Smooth camera controls with spring arm for third-person perspective
+ * - Item interaction and inventory management
  */
 
 #pragma once
@@ -15,82 +21,146 @@ class UWeaponHandlingComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class AItem;
+
 /**
  * @class ABelicaCharacter
- * @brief This class represents the Belica character in the game.
- *
- * It inherits from the ACharacter class and provides methods for handling character-specific actions,
- * including camera setup, weapon handling, and crosshair spread calculations.
+ * @brief Main player character implementing core FPS gameplay mechanics and systems.
+ * 
+ * This character serves as the primary player avatar, combining movement capabilities
+ * from the base Character class with custom FPS mechanics. The class manages:
+ * - Weapon equipping, firing, and handling through a dedicated component
+ * - Dynamic crosshair system that provides visual feedback on accuracy
+ * - Smooth camera transitions between first and third person views
+ * - Player state management (running, walking, crouching, aiming)
+ * 
+ * The character uses a component-based architecture to separate concerns:
+ * - WeaponHandling component manages all weapon-related functionality
+ * - Spring arm and camera components handle view perspectives
+ * - Sphere component manages item detection and interaction
  */
 UCLASS()
-class LASTSHOOTERLS_API ABelicaCharacter : public ACharacter
-{
+class LASTSHOOTERLS_API ABelicaCharacter : public ACharacter {
 	GENERATED_BODY()
 
 public:
 	/**
-	 * @brief Default constructor. Sets default values for this character's properties.
-	 *
-	 * Initializes components such as the camera boom, follow camera, and WeaponHandling component.
+	 * @brief Initializes the character with required components and default settings.
+	 * 
+	 * Sets up the character's core components in a specific order to ensure proper initialization:
+	 * 1. Camera system (spring arm + camera) for player perspective
+	 * 2. Weapon handling for combat mechanics
+	 * 3. Pickup sphere for item interaction
+	 * 4. Default movement and input settings
 	 */
 	ABelicaCharacter();
 
 protected:
-	UFUNCTION()
-	void OnOverlapBegin( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult );
-	UFUNCTION()
-	void OnOverlapEnd( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex );
 	/**
-	 * @brief Called when the game starts or when the character is spawned.
-	 *
-	 * Calls the parent class's BeginPlay function to handle initialization and
-	 * then calls HandleDefaultWeaponSpawn to handle weapon setup.
+	 * @brief Handles item detection when the player moves within pickup range.
+	 * 
+	 * Called when the pickup sphere overlaps with interactable items, allowing the
+	 * character to detect and potentially interact with:
+	 * - Weapons for combat
+	 * - Items for inventory
+	 * - Interactive world elements
+	 */
+	UFUNCTION()
+	void OnOverlapBegin( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	                     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+	                     const FHitResult& SweepResult );
+
+	/**
+	 * @brief Cleans up item detection when the player moves out of pickup range.
+	 * 
+	 * Ensures proper state management when leaving interaction zones by:
+	 * - Clearing current interaction prompts
+	 * - Resetting interaction states
+	 * - Updating UI elements
+	 */
+	UFUNCTION()
+	void OnOverlapEnd( UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	                   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex );
+
+	/**
+	 * @brief Initializes the character's starting loadout and systems.
+	 * 
+	 * Called at game start to:
+	 * 1. Initialize core character systems
+	 * 2. Spawn and equip default weapons
+	 * 3. Set up initial player state
 	 */
 	virtual void BeginPlay() override;
 
 public:
 	/**
-	 * @brief Called every frame.
-	 *
-	 * Updates the character by calling the parent class's Tick function and calculates
-	 * the crosshair spread based on the character's movement and status.
-	 * @param DeltaTime The time elapsed since the last frame.
+	 * @brief Updates character systems and state each frame.
+	 * 
+	 * Handles continuous updates for:
+	 * - Crosshair spread calculations based on movement and state
+	 * - Weapon positioning and animations
+	 * - Camera smoothing and transitions
+	 * 
+	 * @param DeltaTime Time elapsed since last frame, used for smooth interpolation
 	 */
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick( float DeltaTime ) override;
 
 	/**
-	 * @brief Plays the weapon fire montage.
-	 *
-	 * Retrieves the character's animation instance and plays the HipFireMontage if
-	 * both the animation instance and the montage are valid. Jumps to the start of the montage.
+	 * @brief Triggers weapon fire animation sequence.
+	 * 
+	 * Plays the appropriate firing animation based on:
+	 * - Current weapon type
+	 * - Character stance (hip fire vs. aimed)
+	 * - Movement state
 	 */
 	void PlayWeaponFireMontage();
 
 	/**
-	 * @brief Calculates the crosshair spread.
-	 *
-	 * Determines the crosshair spread based on the character's velocity, speed, and whether
-	 * the character is falling. Updates the crosshair spread using the WeaponHandling component.
-	 * @param DeltaTime The time elapsed since the last frame.
+	 * @brief Updates crosshair spread based on player state and movement.
+	 * 
+	 * Dynamically adjusts crosshair spread to provide visual feedback on weapon accuracy.
+	 * Factors considered include:
+	 * - Movement speed and direction
+	 * - Jumping/falling state
+	 * - Aim state
+	 * - Weapon type
+	 * 
+	 * @param DeltaTime Time since last update for smooth transitions
 	 */
-	void CalculateCrosshairSpread(float DeltaTime);
+	void CalculateCrosshairSpread( float DeltaTime );
 
 	/**
-	 * @brief Handles the spawning of the default weapon.
-	 *
-	 * Retrieves the socket for attaching the weapon to the character's right hand and spawns
-	 * the default weapon using the WeaponHandling component.
+	 * @brief Sets up the character's initial weapon loadout.
+	 * 
+	 * Handles the initial weapon setup process:
+	 * 1. Spawns default weapon
+	 * 2. Attaches to correct socket
+	 * 3. Initializes weapon state
 	 */
 	void HandleDefaultWeaponSpawn();
 
-	void HandleEquipWeapon();
 	/**
-	 * @brief Unequips the currently equipped weapon.
-	 *
-	 * Detaches the current weapon from the character and sets its state to unarmed.
+	 * @brief Manages the weapon equip process.
+	 * 
+	 * Coordinates the sequence of events when equipping a weapon:
+	 * 1. Unequips current weapon if necessary
+	 * 2. Plays equip animation
+	 * 3. Updates character state
+	 * 4. Initializes weapon settings
+	 */
+	void HandleEquipWeapon();
+
+	/**
+	 * @brief Manages the weapon unequip process.
+	 * 
+	 * Handles proper cleanup when unequipping weapons:
+	 * 1. Plays unequip animation
+	 * 2. Detaches weapon
+	 * 3. Updates character state
+	 * 4. Resets relevant UI elements
 	 */
 	void UnEquipWeapon();
 
+	// State management functions
 	void StartAiming();
 	void StopAiming();
 
@@ -99,79 +169,127 @@ public:
 
 	void ToggleRun();
 	void ToggleWalk();
-
 	void ToggleCrouch();
+
 private:
 	/**
-	 * @brief The camera boom component that positions the follow camera behind the character.
-	 *
-	 * The camera boom helps keep the camera at a fixed distance behind the character while allowing
-	 * it to follow the character's movements.
+	 * @brief Camera positioning component for smooth follow behavior.
+	 * 
+	 * Uses spring arm mechanics to:
+	 * - Maintain consistent camera distance
+	 * - Handle collision detection
+	 * - Provide smooth transition between positions
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
 	/**
-	 * @brief The camera component that follows the character.
-	 *
-	 * This camera component is attached to the end of the camera boom and provides the player's view.
+	 * @brief Main player view camera.
+	 * 
+	 * Provides the player's perspective and handles:
+	 * - Field of view adjustments
+	 * - View shake effects
+	 * - Transition animations
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	/**
+	 * @brief Defines the area where the player can interact with items.
+	 * 
+	 * Used to detect when the player is close enough to:
+	 * - Pick up weapons and items
+	 * - Interact with world objects
+	 * - Trigger environmental effects
+	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USphereComponent* PickupSphere;
 
 	/**
-	 * @brief The component responsible for handling weapon-related actions.
-	 *
-	 * This component manages weapon spawning, equipping, and other weapon-related functionality.
+	 * @brief Manages all weapon-related functionality.
+	 * 
+	 * Centralizes weapon logic to handle:
+	 * - Weapon state and transitions
+	 * - Ammo management
+	 * - Firing mechanics
+	 * - Weapon switching
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = CharacterAttribute, meta = (AllowPrivateAccess = "true"))
 	UWeaponHandlingComponent* WeaponHandling;
 
 	/**
-	 * @brief The animation montage used for firing the weapon from the hip.
-	 *
-	 * This montage defines the animation sequence played when the character fires the weapon from the hip.
+	 * @brief Animation sequence for weapon firing.
+	 * 
+	 * Defines the character's firing animation, considering:
+	 * - Different weapon types
+	 * - Firing modes
+	 * - Character stance
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* HipFireMontage;
 
 	/**
-	 * @brief The multiplier for the crosshair spread.
-	 *
-	 * This value affects the spread of the crosshair based on the character's movement and other conditions.
+	 * @brief Current spread factor for crosshair display.
+	 * 
+	 * Determines visual feedback for weapon accuracy based on:
+	 * - Movement state
+	 * - Aim state
+	 * - Weapon type
+	 * - Environmental factors
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshair, meta = (AllowPrivateAccess = "true"))
 	float CrosshairSpreadMultiplier;
 
 	/**
-	 * @brief The current weapon the character is holding.
-	 *
-	 * This represents the weapon currently equipped by the character.
+	 * @brief Currently equipped weapon instance.
+	 * 
+	 * Tracks the active weapon to:
+	 * - Manage weapon state
+	 * - Handle animations
+	 * - Process input
+	 * - Update UI
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	AWeapon* EquippedWeapon;
 
+	/**
+	 * @brief Currently focused interactable item.
+	 * 
+	 * Tracks items the player can interact with to:
+	 * - Show interaction prompts
+	 * - Handle pickup/use actions
+	 * - Update UI elements
+	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	AItem* EquipableItem;
 
 public:
 	/**
-	 * @brief Gets the WeaponHandling component.
-	 *
-	 * Provides access to the WeaponHandling component for external use.
-	 * @return The WeaponHandling component.
+	 * @brief Provides access to weapon handling systems.
+	 * 
+	 * Exposed to allow other systems to:
+	 * - Query weapon state
+	 * - Trigger weapon events
+	 * - Modify weapon behavior
+	 * 
+	 * @return The character's weapon handling component
 	 */
-	FORCEINLINE UWeaponHandlingComponent* GetWeaponHandling() const { return WeaponHandling; }
+	FORCEINLINE UWeaponHandlingComponent* GetWeaponHandling() const {
+		return WeaponHandling;
+	}
 
 	/**
-	 * @brief Gets the crosshair spread multiplier.
-	 *
-	 * Provides access to the crosshair spread multiplier for external use.
-	 * @return The crosshair spread multiplier.
+	 * @brief Provides access to current crosshair spread value.
+	 * 
+	 * Exposed to allow UI and other systems to:
+	 * - Update crosshair display
+	 * - Modify weapon accuracy
+	 * - Apply visual effects
+	 * 
+	 * @return Current crosshair spread multiplier
 	 */
 	UFUNCTION(BlueprintCallable)
-	float GetCrosshairSpreadMultiplier() const { return CrosshairSpreadMultiplier; }
+	float GetCrosshairSpreadMultiplier() const {
+		return CrosshairSpreadMultiplier;
+	}
 };
