@@ -223,7 +223,7 @@ void ABelicaCharacter::StartFIreWeapon()
 		ActorsToIgnore.Emplace(this);
 		ActorsToIgnore.Emplace(EquippedWeapon);
 		
-		WeaponHandling->SetFireTimer(SocketTransform, SocketTransform.GetLocation(), TraceEndLocation, ActorsToIgnore);
+		WeaponHandling->FireWeapon(SocketTransform, SocketTransform.GetLocation(), TraceEndLocation, ActorsToIgnore);
 	}
 }
 

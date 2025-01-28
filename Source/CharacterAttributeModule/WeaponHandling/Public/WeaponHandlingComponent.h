@@ -41,6 +41,7 @@ public:
 	 */
 	UWeaponHandlingComponent();
 
+protected:
 	/**
 	 * @brief Fires the weapon.
 	 * Plays the fire sound, performs a weapon trace, and spawns the muzzle flash and impact particles.
@@ -49,7 +50,7 @@ public:
 	 * @param WeaponFireTraceEnd The end location of the weapon fire trace.
 	 * @param ActorsToIgnore
 	 */
-	void FireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore );
+	void ExecuteFireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore );
 
 	/**
 	 * @brief Traces under the crosshair.
@@ -72,6 +73,7 @@ public:
 	 */
 	bool WeaponTrace( const FVector& TraceStart, FVector& TraceEnd, FHitResult& TraceHitResult, TArray<AActor*>& ActorsToIgnore ) const;
 
+public:
 	/**
 	 * @brief Changes the camera field of view based on aiming state.
 	 * Interpolates the camera's field of view towards the zoomed or default value based on aiming.
@@ -127,9 +129,9 @@ public:
 	 * @param BarrelSocketTransform The transform of the barrel socket.
 	 * @param WeaponFireTraceStart The start location of the weapon fire trace.
 	 * @param WeaponFireTraceEnd The end location of the weapon fire trace.
-	 * @param ActorsToIgnore
+	 * @param ActorsToIgnore Used to ignore the actors that shouldn't be hit by the weapon trace. Usually the player character and the weapon itself.
 	 */
-	void SetFireTimer( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore );
+	void FireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore );
 
 	/**
 	 * @brief Spawns the default weapon for the character.

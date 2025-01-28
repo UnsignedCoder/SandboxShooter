@@ -128,7 +128,7 @@ void ABelicaController::Jump() {
 /**
  * @brief Called when the FireWeapon action is triggered.
  * 
- * This function is invoked when the FireWeapon action is triggered. It handles starting
+ * This function is invoked when the ExecuteFireWeapon action is triggered. It handles starting
  * the weapon firing process, including playing the fire montage and setting the fire timer.
  */
 void ABelicaController::HandleFireWeaponStart() { Belica->StartFIreWeapon(); }
@@ -136,7 +136,7 @@ void ABelicaController::HandleFireWeaponStart() { Belica->StartFIreWeapon(); }
 /**
  * @brief Called when the FireWeapon action ends.
  * 
- * This function is invoked when the FireWeapon action is completed. It updates the weapon's
+ * This function is invoked when the ExecuteFireWeapon action is completed. It updates the weapon's
  * firing status to allow for re-triggering.
  */
 void ABelicaController::HandleFireWeaponEnd() { Belica->EndWeaponFIre(); }

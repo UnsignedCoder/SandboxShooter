@@ -87,7 +87,7 @@ public:
 	/**
 	 * @brief Handles the start of the FireWeapon action.
 	 * 
-	 * This function is called when the FireWeapon action is triggered. It starts the weapon
+	 * This function is called when the ExecuteFireWeapon action is triggered. It starts the weapon
 	 * firing process, including playing the fire montage and setting the fire timer.
 	 */
 	void HandleFireWeaponStart();
@@ -95,7 +95,7 @@ public:
 	/**
 	 * @brief Handles the end of the FireWeapon action.
 	 * 
-	 * This function is called when the FireWeapon action is completed. It updates the weapon's
+	 * This function is called when the ExecuteFireWeapon action is completed. It updates the weapon's
 	 * firing status to allow for re-triggering.
 	 */
 	void HandleFireWeaponEnd();

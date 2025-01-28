@@ -247,9 +247,9 @@ void UWeaponHandlingComponent::AutoFireTimerReset() { bShouldFireWeapon = true; 
  * @param WeaponFireTraceEnd The end location of the weapon fire trace.
  * @param ActorsToIgnore
  */
-void UWeaponHandlingComponent::SetFireTimer( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore ) {
+void UWeaponHandlingComponent::FireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore ) {
 	// Fire the weapon and prevent it from firing again until the timer resets
-	FireWeapon(BarrelSocketTransform, WeaponFireTraceStart, WeaponFireTraceEnd, ActorsToIgnore);
+	ExecuteFireWeapon(BarrelSocketTransform, WeaponFireTraceStart, WeaponFireTraceEnd, ActorsToIgnore);
 	bShouldFireWeapon = false;
 
 	// Set a timer to reset the weapon fire state after the fire rate delay
@@ -265,7 +265,7 @@ void UWeaponHandlingComponent::SetFireTimer( const FTransform& BarrelSocketTrans
  * @param WeaponFireTraceEnd The end location of the weapon fire trace.
  * @param ActorsToIgnore
  */
-void UWeaponHandlingComponent::FireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore ) {
+void UWeaponHandlingComponent::ExecuteFireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore ) {
 	if ( bShouldFireWeapon ) {
 		// Play the fire sound
 		if ( FireSound ) { UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, GetOwner()->GetActorLocation()); }
