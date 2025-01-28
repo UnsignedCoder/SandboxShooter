@@ -217,7 +217,13 @@ void ABelicaCharacter::StartFIreWeapon()
 
 		// Fire the weapon
 		FVector TraceEndLocation;
-		WeaponHandling->SetFireTimer(SocketTransform, SocketTransform.GetLocation(), TraceEndLocation);
+
+		/* Actors to ignore by the weapon fire trace*/
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Emplace(this);
+		ActorsToIgnore.Emplace(EquippedWeapon);
+		
+		WeaponHandling->SetFireTimer(SocketTransform, SocketTransform.GetLocation(), TraceEndLocation, ActorsToIgnore);
 	}
 }
 

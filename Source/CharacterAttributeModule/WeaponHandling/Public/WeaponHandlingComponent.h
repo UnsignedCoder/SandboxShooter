@@ -47,17 +47,19 @@ public:
 	 * @param BarrelSocketTransform The transform of the barrel socket.
 	 * @param WeaponFireTraceStart The start location of the weapon fire trace.
 	 * @param WeaponFireTraceEnd The end location of the weapon fire trace.
+	 * @param ActorsToIgnore
 	 */
-	void FireWeapon(const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd);
+	void FireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore );
 
 	/**
 	 * @brief Traces under the crosshair.
 	 * Performs a line trace from the center of the screen and checks if it hits anything.
 	 * @param TraceHitResult The result of the trace.
 	 * @param TraceEndLocation The end location of the trace.
+	 * @param ActorsToIgnore Actors to be ignored by the line trace
 	 * @return True if the trace hit something, false otherwise.
 	 */
-	bool TraceUnderCrosshair(FHitResult& TraceHitResult, FVector& TraceEndLocation);
+	bool TraceUnderCrosshair( FHitResult& TraceHitResult, FVector& TraceEndLocation, TArray<AActor*>& ActorsToIgnore ) const;
 
 	/**
 	 * @brief Performs a weapon trace.
@@ -65,9 +67,10 @@ public:
 	 * @param TraceStart The start location of the trace.
 	 * @param TraceEnd The end location of the trace.
 	 * @param TraceHitResult
+	 * @param ActorsToIgnore
 	 * @return True if the trace hit something, false otherwise.
 	 */
-	bool WeaponTrace( const FVector& TraceStart, FVector& TraceEnd, FHitResult& TraceHitResult );
+	bool WeaponTrace( const FVector& TraceStart, FVector& TraceEnd, FHitResult& TraceHitResult, TArray<AActor*>& ActorsToIgnore ) const;
 
 	/**
 	 * @brief Changes the camera field of view based on aiming state.
@@ -124,8 +127,9 @@ public:
 	 * @param BarrelSocketTransform The transform of the barrel socket.
 	 * @param WeaponFireTraceStart The start location of the weapon fire trace.
 	 * @param WeaponFireTraceEnd The end location of the weapon fire trace.
+	 * @param ActorsToIgnore
 	 */
-	void SetFireTimer(const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd);
+	void SetFireTimer( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore );
 
 	/**
 	 * @brief Spawns the default weapon for the character.
@@ -191,8 +195,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
-//Aiming related variables 
 private:
+//Aiming related variables 
 	/** The default camera field of view. */
 	UPROPERTY(EditAnywhere, Category = "Field of View", meta = (AllowPrivateAccess = "true"))
 	float DefaultCameraFOV;

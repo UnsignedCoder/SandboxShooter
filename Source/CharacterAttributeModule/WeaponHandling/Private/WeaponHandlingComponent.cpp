@@ -55,12 +55,13 @@ void UWeaponHandlingComponent::TickComponent( float DeltaTime, ELevelTick TickTy
  * Performs a line trace from the center of the screen (crosshair location) and checks if it hits anything.
  * @param TraceHitResult The result of the trace.
  * @param TraceEndLocation The end location of the trace.
+ * @param ActorsToIgnore
  * @return True if the trace hit something, false otherwise.
  *
  * Todo: Add in a layer of abstraction to take in an array of actors to allow for ignoring of certain typoes of actors like the
  *		 player character and the weapon they are holding to avert the self collision that is currently happening with the weapon
  */
-bool UWeaponHandlingComponent::TraceUnderCrosshair( FHitResult& TraceHitResult, FVector& TraceEndLocation ) {
+bool UWeaponHandlingComponent::TraceUnderCrosshair( FHitResult& TraceHitResult, FVector& TraceEndLocation, TArray<AActor*>& ActorsToIgnore ) const {
 	// Get the viewport size
 	FVector2D ViewportSize;
 	GetWorld()->GetGameViewport()->GetViewportSize(ViewportSize);
@@ -80,8 +81,10 @@ bool UWeaponHandlingComponent::TraceUnderCrosshair( FHitResult& TraceHitResult, 
 		TraceEndLocation = TraceEnd;
 
 		FCollisionQueryParams TraceParams;
-		TraceParams.AddIgnoredActor(GetOwner());
-
+		for (AActor* Actor : ActorsToIgnore) {
+			TraceParams.AddIgnoredActor(Actor);
+		}
+		
 		// Perform the line trace
 		GetWorld()->LineTraceSingleByChannel(TraceHitResult, TraceStart, TraceEnd, ECollisionChannel::ECC_Visibility, TraceParams);
 		if ( TraceHitResult.bBlockingHit ) {
@@ -101,11 +104,12 @@ bool UWeaponHandlingComponent::TraceUnderCrosshair( FHitResult& TraceHitResult, 
  * @param TraceStart The start location of the trace.
  * @param TraceEnd The end location of the trace.
  * @param TraceHitResult
+ * @param ActorsToIgnore
  * @return True if the trace hit something, false otherwise.
  */
-bool UWeaponHandlingComponent::WeaponTrace( const FVector& TraceStart, FVector& TraceEnd, FHitResult& TraceHitResult ) {
+bool UWeaponHandlingComponent::WeaponTrace( const FVector& TraceStart, FVector& TraceEnd, FHitResult& TraceHitResult, TArray<AActor*>& ActorsToIgnore ) const {
 	// Perform a trace under the crosshair
-	bool bCrosshairHit = TraceUnderCrosshair(TraceHitResult, TraceEnd);
+	bool bCrosshairHit = TraceUnderCrosshair(TraceHitResult, TraceEnd, ActorsToIgnore);
 
 	if ( bCrosshairHit ) {
 		// If the crosshair trace hit something, update the end location
@@ -117,9 +121,14 @@ bool UWeaponHandlingComponent::WeaponTrace( const FVector& TraceStart, FVector& 
 	const FVector WeaponTraceStart = TraceStart;
 	const FVector StartToEnd = TraceEnd - TraceStart;
 	const FVector WeaponTraceEnd = TraceStart + StartToEnd * 1.25f;
+
+	
 	
 	GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
 
+	//Todo: Fix the anim montage so the gun is always pointing in the direction you want to shoot so the trace works as intended. Motion matching skill issue
+	DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), WeaponTraceHit.ImpactPoint, FColor::Red, false, 1.0f, 0, 5.0f);
+			
 	if ( WeaponTraceHit.bBlockingHit ) {
 		// If the weapon trace hit something, update the end location and return true
 		TraceEnd = WeaponTraceHit.Location;
@@ -236,10 +245,11 @@ void UWeaponHandlingComponent::AutoFireTimerReset() { bShouldFireWeapon = true; 
  * @param BarrelSocketTransform The transform of the barrel socket.
  * @param WeaponFireTraceStart The start location of the weapon fire trace.
  * @param WeaponFireTraceEnd The end location of the weapon fire trace.
+ * @param ActorsToIgnore
  */
-void UWeaponHandlingComponent::SetFireTimer( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd ) {
+void UWeaponHandlingComponent::SetFireTimer( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore ) {
 	// Fire the weapon and prevent it from firing again until the timer resets
-	FireWeapon(BarrelSocketTransform, WeaponFireTraceStart, WeaponFireTraceEnd);
+	FireWeapon(BarrelSocketTransform, WeaponFireTraceStart, WeaponFireTraceEnd, ActorsToIgnore);
 	bShouldFireWeapon = false;
 
 	// Set a timer to reset the weapon fire state after the fire rate delay
@@ -253,15 +263,16 @@ void UWeaponHandlingComponent::SetFireTimer( const FTransform& BarrelSocketTrans
  * @param BarrelSocketTransform The transform of the barrel socket.
  * @param WeaponFireTraceStart The start location of the weapon fire trace.
  * @param WeaponFireTraceEnd The end location of the weapon fire trace.
+ * @param ActorsToIgnore
  */
-void UWeaponHandlingComponent::FireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd ) {
+void UWeaponHandlingComponent::FireWeapon( const FTransform& BarrelSocketTransform, const FVector& WeaponFireTraceStart, FVector& WeaponFireTraceEnd, TArray<AActor*>& ActorsToIgnore ) {
 	if ( bShouldFireWeapon ) {
 		// Play the fire sound
 		if ( FireSound ) { UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, GetOwner()->GetActorLocation()); }
 
 		// Perform a weapon trace
 		FHitResult WeaponTraceHit;
-		WeaponTrace(WeaponFireTraceStart, WeaponFireTraceEnd, WeaponTraceHit);
+		WeaponTrace(WeaponFireTraceStart, WeaponFireTraceEnd, WeaponTraceHit, ActorsToIgnore);
 
 		// Spawn the muzzle flash
 		if ( MuzzleFlash ) { UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, BarrelSocketTransform.GetLocation()); }
@@ -270,17 +281,16 @@ void UWeaponHandlingComponent::FireWeapon( const FTransform& BarrelSocketTransfo
 		if ( ImpactParticle &&  WeaponTraceHit.bBlockingHit ) {
 			FString HitActorName = WeaponTraceHit.GetActor() ? WeaponTraceHit.GetActor()->GetName() : TEXT("Nothing");
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Hit: %s"), *HitActorName));
-			DrawDebugLine(GetWorld(), WeaponTraceHit.GetActor()->GetActorLocation(), FVector(0,0, 100000), FColor::Red, false, 1.0f, 0, 1.0f);
+			DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), WeaponTraceHit.ImpactPoint, FColor::Red, false, 1.0f, 0, 5.0f);
 			
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, WeaponFireTraceEnd);
-
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticle, WeaponTraceHit.ImpactPoint, WeaponTraceHit.ImpactNormal.Rotation());
+		}
 			// Spawn the beam particles
-			if ( BeamParticle ) {
-				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticle, BarrelSocketTransform);
-				if ( Beam ) {
-					// Set the target of the beam to the end location of the weapon fire trace
-					Beam->SetVectorParameter("Target", WeaponFireTraceEnd);
-				}
+		if ( BeamParticle ) {
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticle, BarrelSocketTransform);
+			if ( Beam ) {
+				// Set the target of the beam to the end location of the weapon fire trace
+				Beam->SetVectorParameter("Target", WeaponFireTraceEnd);
 			}
 		}
 
